@@ -1,4 +1,4 @@
-const CACHE_NAME = "gpf-mapas-v2-3-gps-corrigido";
+const CACHE_NAME = "gpf-mapas-v2-5-offline-gps";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -7,9 +7,19 @@ const APP_SHELL = [
   "./manifest.json"
 ];
 
+const PDFJS_ASSETS = [
+  "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js",
+  "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"
+];
+
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL)).catch(() => null)
+    caches.open(CACHE_NAME).then(async (cache) => {
+      await cache.addAll(APP_SHELL).catch(() => null);
+      for (const url of PDFJS_ASSETS) {
+        await cache.add(url).catch(() => null);
+      }
+    })
   );
   self.skipWaiting();
 });
@@ -42,6 +52,7 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
+  // CDN/PDF.js: cache first para funcionar offline depois.
   event.respondWith(
     caches.match(event.request).then((cached) => {
       if (cached) return cached;

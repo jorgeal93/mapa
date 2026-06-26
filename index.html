@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <meta name="theme-color" content="#174f2a" />
   <meta name="description" content="GPF Mapas - PDF/GeoPDF com GPS e zoom no celular." />
-  <title>GPF Mapas V2.3</title>
+  <title>GPF Mapas V2.5</title>
   <link rel="manifest" href="./manifest.json" />
   <link rel="stylesheet" href="./style.css" />
 </head>
@@ -15,7 +15,7 @@
     <div>
       <p class="eyebrow">GPF</p>
       <h1>Mapas</h1>
-      <p class="muted">V2.3 GPS Corrigido</p>
+      <p class="muted">V2.5 Offline GPS</p>
     </div>
 
     <div class="status-stack">
@@ -32,7 +32,7 @@
           <p class="eyebrow">Mapas offline</p>
           <h2>Importe PDF, abra no celular e localize com GPS.</h2>
           <p class="muted">
-            Toque em Localizar para pedir GPS, mostrar sua posição e centralizar no mapa.
+            Depois de abrir online uma vez, o app guarda PDF.js no aparelho para mapa + GPS funcionarem offline.
           </p>
         </div>
 
@@ -103,10 +103,6 @@
       <div class="viewer-note" id="viewerNote" hidden aria-hidden="true">Abra um mapa para começar.</div>
 
       <div class="map-wrapper" id="mapWrapper">
-        <div class="floating-map-actions single" id="floatingMapActions">
-          <button class="float-main locate-button" id="locateBtn" type="button">Localizar</button>
-        </div>
-
         <div class="map-stage" id="mapStage">
           <canvas id="pdfCanvas"></canvas>
           <div class="svg-layer" id="svgLayer"></div>
@@ -115,6 +111,10 @@
         </div>
 
         <iframe id="nativePdfFrame" class="native-pdf-frame" title="Visualizador PDF"></iframe>
+      </div>
+
+      <div class="floating-map-actions single fixed-locate" id="floatingMapActions">
+        <button class="float-main locate-button" id="locateBtn" type="button">Localizar</button>
       </div>
 
       <section class="panel point-panel" hidden aria-hidden="true">
