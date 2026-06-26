@@ -1,42 +1,35 @@
-# GPF Mapas V1.3 GPS Corrigido
+# GPF Mapas V1.4 Mobile HD
 
-Correções principais:
+Melhorias desta versão:
 
-- Corrigido problema de abrir sempre em modo nativo no celular quando o PDF.js falha.
-- Adicionadas 3 opções online de PDF.js: cdnjs, jsDelivr e unpkg.
-- Renderização do PDF ajustada para celular, evitando canvas gigante em mapa A0.
-- GPS agora usa getCurrentPosition primeiro e watchPosition depois.
-- Avisos mais claros quando o GPS está ativo, mas o PDF está em modo nativo.
-- Botão "Limpar cache" para remover versão antiga do PWA/Service Worker.
-- Service Worker atualizado para buscar arquivos novos primeiro.
+- Layout mais responsivo para celular.
+- A tela do mapa fica maior no celular.
+- Cabeçalho é ocultado quando o mapa está aberto para ganhar espaço.
+- Controles do mapa viraram barra horizontal com rolagem no celular.
+- PDF renderizado em qualidade maior.
+- Zoom mais nítido em mapas grandes/A0.
+- Zoom centralizado na tela ou no cursor.
+- Botões com nomes menores para caber melhor no celular.
+- Mantém GPS real, GeoPDF, pontos e exportação CSV.
 
-## Importante
+## Por que a imagem ficava feia?
 
-Para o GPS aparecer sobre o mapa, precisa cumprir 3 coisas:
+A versão anterior renderizava o PDF em escala leve para não travar no celular.
+Isso deixava o mapa rápido, mas quando dava zoom os detalhes ficavam borrados.
 
-1. Abrir o app em HTTPS, por exemplo GitHub Pages.
-2. O mapa precisa abrir em PDF.js, não em "Nativo".
-3. O PDF precisa ser GeoPDF/georreferenciado.
+Nesta V1.4 o app renderiza o PDF em uma resolução maior e mostra em tamanho menor por CSS.
+Assim o zoom fica mais limpo.
 
-Se aparecer "Nativo", o GPS pode até pegar sua latitude/longitude, mas não consegue desenhar sua posição em cima do mapa.
+## Para testar no celular
 
-## Teste no celular
-
-1. Suba esta pasta no GitHub Pages.
-2. Abra o link HTTPS no celular.
+1. Suba a pasta no GitHub Pages.
+2. Abra o app no celular.
 3. Aperte "Limpar cache" uma vez.
-4. Importe o PDF de mapa.
-5. Abra o mapa.
-6. Veja se o status mostra "PDF.js online", "PDF.js jsDelivr" ou "PDF.js unpkg".
-7. Aperte "Ativar GPS".
-8. Permita localização.
-9. Aguarde alguns segundos ao ar livre.
+4. Feche e abra o app novamente.
+5. Importe o PDF.
+6. Abra o mapa.
+7. Teste zoom, arraste e GPS.
 
-## Para ficar 100% offline
+## Observação
 
-Coloque estes arquivos dentro da pasta libs:
-
-- libs/pdf.min.js
-- libs/pdf.worker.min.js
-
-Sem eles, o app usa internet para carregar PDF.js na primeira vez.
+Se o PDF for muito pesado, a primeira abertura pode demorar um pouco mais, porque agora a qualidade está maior.

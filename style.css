@@ -322,8 +322,8 @@ button {
 
 .map-wrapper {
   position: relative;
-  height: min(68vh, 720px);
-  min-height: 420px;
+  height: min(72vh, 780px);
+  min-height: 460px;
   overflow: hidden;
   border-radius: 24px;
   background:
@@ -767,5 +767,244 @@ button:disabled {
 
   .top-actions button {
     flex: 1;
+  }
+}
+
+
+/* ===== V1.4 Mobile HD ===== */
+
+.map-stage {
+  /* ajuda o navegador a manter o PDF mais limpo durante zoom/arraste */
+  backface-visibility: hidden;
+  transform-style: preserve-3d;
+}
+
+#pdfCanvas {
+  image-rendering: auto;
+}
+
+.map-controls button,
+.import-button,
+.primary-button,
+.ghost-button,
+.danger-button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+body.map-open {
+  overflow-x: hidden;
+}
+
+@media (max-width: 720px) {
+  body {
+    padding: 8px;
+  }
+
+  body.map-open {
+    padding: 0 6px 6px;
+  }
+
+  body.map-open .app-header {
+    display: none;
+  }
+
+  .app-header {
+    display: grid;
+    grid-template-columns: 1fr;
+    align-items: stretch;
+    gap: 10px;
+    padding: 12px 2px 8px;
+  }
+
+  .app-header h1 {
+    font-size: 34px;
+  }
+
+  .status-stack {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .status-stack .status-pill:first-child {
+    grid-column: span 2;
+  }
+
+  .status-pill {
+    justify-content: center;
+    font-size: 11px;
+    padding: 8px 9px;
+    min-height: 36px;
+  }
+
+  .hero-card {
+    min-height: unset;
+    border-radius: 22px;
+    padding: 18px;
+  }
+
+  .hero-card h2 {
+    font-size: 31px;
+    line-height: 1;
+  }
+
+  .panel {
+    padding: 14px;
+    border-radius: 20px;
+  }
+
+  .section-title {
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .top-actions {
+    width: 100%;
+  }
+
+  .top-actions button {
+    flex: 1;
+    min-height: 40px;
+    font-size: 13px;
+  }
+
+  .map-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 60;
+    margin: 0 -6px;
+    padding: 8px 8px;
+    border-radius: 0 0 18px 18px;
+    grid-template-columns: 42px minmax(0, 1fr) auto;
+    background: rgba(7, 20, 12, 0.94);
+    backdrop-filter: blur(18px);
+  }
+
+  .map-title strong {
+    font-size: 14px;
+  }
+
+  .map-title span {
+    font-size: 11px;
+  }
+
+  .map-topbar .danger-button {
+    min-height: 36px;
+    padding: 0 10px;
+    font-size: 12px;
+  }
+
+  .map-controls {
+    position: sticky;
+    top: 54px;
+    z-index: 55;
+    margin: 8px 0;
+    padding: 8px;
+    border-radius: 18px;
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 8px;
+    background: rgba(7, 20, 12, 0.90);
+    backdrop-filter: blur(18px);
+    scroll-snap-type: x proximity;
+  }
+
+  .map-controls::-webkit-scrollbar {
+    display: none;
+  }
+
+  .map-controls button,
+  .zoom-group {
+    flex: 0 0 auto;
+    scroll-snap-align: start;
+  }
+
+  .map-controls button {
+    min-height: 40px;
+    padding: 0 12px;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+
+  .zoom-group {
+    min-height: 40px;
+    padding: 0 6px;
+  }
+
+  .zoom-group button {
+    min-width: 36px;
+  }
+
+  .zoom-group span {
+    min-width: 48px;
+    font-size: 13px;
+  }
+
+  .gps-info {
+    margin: 6px 0;
+    padding: 9px 10px;
+    border-radius: 14px;
+    font-size: 12px;
+    line-height: 1.35;
+  }
+
+  .viewer-note {
+    margin: 4px 0 8px;
+    padding: 0 2px;
+    font-size: 12px;
+  }
+
+  .map-wrapper {
+    height: calc(100dvh - 178px);
+    min-height: 430px;
+    border-radius: 18px;
+  }
+
+  .point-panel {
+    margin-top: 10px;
+    margin-bottom: 10px;
+  }
+
+  .points-list {
+    max-height: 34vh;
+    overflow: auto;
+    padding-right: 2px;
+  }
+
+  .modal {
+    width: calc(100% - 18px);
+  }
+
+  .modal-card {
+    padding: 15px;
+    border-radius: 22px;
+  }
+
+  .modal-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .toast {
+    bottom: calc(12px + env(safe-area-inset-bottom));
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 390px) {
+  .map-wrapper {
+    height: calc(100dvh - 188px);
+    min-height: 390px;
+  }
+
+  .map-controls button {
+    font-size: 12px;
+    padding: 0 10px;
+  }
+
+  .hero-card h2 {
+    font-size: 28px;
   }
 }

@@ -1,7 +1,7 @@
 {
-  "name": "GPF Mapas GPS",
+  "name": "GPF Mapas Mobile HD",
   "short_name": "GPF Mapas",
-  "description": "GPF Mapas V1.3 - mapas PDF/GeoPDF com GPS real corrigido.",
+  "description": "GPF Mapas V1.4 - app mobile com PDF/GeoPDF em melhor qualidade e GPS real.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
