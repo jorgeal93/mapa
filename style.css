@@ -1293,3 +1293,276 @@ button.clicked {
     grid-column: auto;
   }
 }
+
+
+/* ===== V3.8 App-like UI ===== */
+
+:root {
+  --app-surface: rgba(9, 24, 14, .88);
+  --app-surface-2: rgba(255,255,255,.06);
+  --pill-text: #eaf8ef;
+}
+
+/* Cabeçalho com mais cara de app */
+.app-header {
+  padding: 14px 2px 12px;
+  gap: 16px;
+  align-items: center;
+}
+
+.brand-block {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand-mark {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
+  background:
+    linear-gradient(135deg, rgba(40,199,111,.22), rgba(126,242,170,.10));
+  border: 1px solid rgba(255,255,255,.10);
+  color: var(--primary);
+  font-size: 13px;
+  font-weight: 950;
+  letter-spacing: .14em;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+}
+
+.brand-copy h1 {
+  margin: 0;
+}
+
+.brand-copy .muted {
+  font-size: 13px;
+}
+
+/* Status mais compactos */
+.status-stack {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(92px, auto));
+  gap: 8px;
+}
+
+.status-mini {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 52px;
+  padding: 8px 12px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
+  border: 1px solid rgba(255,255,255,.11);
+  box-shadow:
+    0 10px 24px rgba(0,0,0,.18),
+    inset 0 1px 0 rgba(255,255,255,.08);
+}
+
+.status-led {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--danger);
+  box-shadow: 0 0 0 4px rgba(255,255,255,.04);
+  flex: 0 0 auto;
+}
+
+.status-copy {
+  min-width: 0;
+}
+
+.status-copy small {
+  display: block;
+  color: var(--muted);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: .11em;
+  margin-bottom: 2px;
+}
+
+.status-copy strong {
+  display: block;
+  color: var(--pill-text);
+  font-size: 13px;
+  line-height: 1.15;
+  letter-spacing: -.01em;
+  white-space: nowrap;
+}
+
+.status-mini.ready .status-led,
+.status-mini.online .status-led,
+.status-mini.inside .status-led,
+.status-mini.active .status-led {
+  background: var(--primary);
+}
+
+.status-mini.waiting .status-led {
+  background: var(--warning);
+}
+
+/* Hero mais limpo */
+.app-hero {
+  min-height: 148px;
+  padding: 20px 22px;
+  grid-template-columns: 1fr auto;
+  border-radius: 26px;
+  background:
+    radial-gradient(circle at 100% 100%, rgba(40,199,111,.14), transparent 24%),
+    linear-gradient(135deg, rgba(255,255,255,.10), rgba(255,255,255,.05));
+}
+
+.hero-copy {
+  display: grid;
+  gap: 10px;
+}
+
+.app-hero h2 {
+  max-width: 520px;
+  margin: 0;
+  font-size: clamp(26px, 4.6vw, 44px);
+  line-height: .96;
+  letter-spacing: -.05em;
+}
+
+.hero-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.hero-tags span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.11);
+  color: #dfffea;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.hero-import {
+  min-width: 190px;
+  min-height: 60px;
+  padding: 0 24px;
+  border-radius: 22px;
+  align-self: center;
+}
+
+/* Biblioteca mais app */
+.panel {
+  border-radius: 26px;
+}
+
+.section-title {
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+/* Ajustes mobile */
+@media (max-width: 820px) {
+  .app-header {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .brand-block {
+    gap: 10px;
+  }
+
+  .brand-mark {
+    width: 42px;
+    height: 42px;
+    border-radius: 14px;
+    font-size: 12px;
+  }
+
+  .status-stack {
+    grid-template-columns: repeat(3, 1fr);
+    width: 100%;
+  }
+
+  .status-mini {
+    min-height: 48px;
+    padding: 8px 10px;
+    border-radius: 16px;
+    gap: 8px;
+  }
+
+  .status-copy small {
+    font-size: 9px;
+    margin-bottom: 1px;
+  }
+
+  .status-copy strong {
+    font-size: 12px;
+  }
+
+  .app-hero {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 18px;
+    min-height: auto;
+  }
+
+  .app-hero h2 {
+    max-width: 100%;
+    font-size: clamp(28px, 8vw, 38px);
+  }
+
+  .hero-tags {
+    gap: 7px;
+  }
+
+  .hero-tags span {
+    min-height: 30px;
+    padding: 0 11px;
+    font-size: 11px;
+  }
+
+  .hero-import {
+    width: 100%;
+    min-width: 0;
+    min-height: 56px;
+    justify-self: stretch;
+  }
+}
+
+@media (max-width: 520px) {
+  .status-stack {
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 6px;
+  }
+
+  .status-mini {
+    padding: 7px 8px;
+    gap: 7px;
+  }
+
+  .status-led {
+    width: 9px;
+    height: 9px;
+  }
+
+  .status-copy strong {
+    font-size: 11px;
+  }
+
+  .brand-copy .muted {
+    font-size: 12px;
+  }
+
+  .app-hero {
+    padding: 16px;
+    border-radius: 22px;
+  }
+
+  .app-hero h2 {
+    font-size: 31px;
+  }
+}

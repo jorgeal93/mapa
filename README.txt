@@ -1,25 +1,16 @@
-# GPF Mapas V3.7 — Visual Moderno
+# GPF Mapas V3.8 — App-like
 
-Melhorias desta versão:
+Nesta versão foquei no que você marcou em vermelho:
 
-- Botões reorganizados e com visual mais moderno.
-- Barra de ações da tela inicial ficou mais limpa.
-- Botões Atualizar, Cache e Resetar ficaram agrupados.
-- Botões dos cards foram reorganizados:
-  - Abrir mapa como ação principal;
-  - Gerar/Regenerar;
-  - Excluir.
-- Botão Localizar agora fica centralizado embaixo do mapa.
-- Visual com efeito vidro, bordas mais modernas e melhor toque no celular.
-- Mantém as correções da V3.6 para Android/iOS.
-- A lógica do app não foi alterada, só visual e posicionamento.
+- visual mais parecido com aplicativo;
+- menos texto no topo;
+- hero principal mais limpo;
+- status do canto superior mais compactos;
+- cabeçalho com visual de app;
+- mantém a lógica e os botões funcionando.
 
-## Como testar
-
-1. Suba a V3.7.
-2. Abra no celular.
-3. Veja se os botões ficaram melhor posicionados.
-4. Importe o PDF.
-5. Toque em Gerar.
-6. Depois Abrir mapa.
-7. Use Localizar.
+Mudanças principais:
+- "Rede / Mapa / GPS" agora aparecem em cartões pequenos;
+- texto grande do banner foi reduzido;
+- banner ficou mais limpo;
+- botão Importar PDF continua destacado.

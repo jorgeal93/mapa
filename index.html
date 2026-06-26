@@ -9,7 +9,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="GPF Mapas" />
   <meta name="description" content="GPF Mapas V3 - mapa real offline com GPS." />
-  <title>GPF Mapas V3.7</title>
+  <title>GPF Mapas V3.8</title>
   <link rel="manifest" href="./manifest.json" />
   <link rel="stylesheet" href="./style.css" />
 </head>
@@ -19,13 +19,31 @@
     <div>
       <p class="eyebrow">GPF</p>
       <h1>Mapas</h1>
-      <p class="muted">V3.7 Visual Moderno</p>
+      <p class="muted">V3.8 App</p>
     </div>
 
     <div class="status-stack">
-      <div class="status-pill" id="connectionStatus"><span class="dot"></span><span>Verificando...</span></div>
-      <div class="status-pill" id="engineStatus"><span class="dot"></span><span>Motor</span></div>
-      <div class="status-pill" id="gpsStatus"><span class="dot"></span><span>GPS parado</span></div>
+      <div class="status-mini" id="connectionStatus">
+        <span class="status-led"></span>
+        <div class="status-copy">
+          <small>Rede</small>
+          <strong data-status-value>---</strong>
+        </div>
+      </div>
+      <div class="status-mini" id="engineStatus">
+        <span class="status-led"></span>
+        <div class="status-copy">
+          <small>Mapa</small>
+          <strong data-status-value>---</strong>
+        </div>
+      </div>
+      <div class="status-mini" id="gpsStatus">
+        <span class="status-led"></span>
+        <div class="status-copy">
+          <small>GPS</small>
+          <strong data-status-value>---</strong>
+        </div>
+      </div>
     </div>
   </header>
 
@@ -36,7 +54,7 @@
           <p class="eyebrow">Offline + GPS</p>
           <h2>Mapa nítido, controlado pelo app, com GPS em cima.</h2>
           <p class="muted">
-            Visual mais moderno, com botões melhor posicionados e mais fáceis de usar no celular.
+            Visual com mais cara de aplicativo.
           </p>
         </div>
 

@@ -1,11 +1,11 @@
-/* GPF Mapas V3.7 Visual Moderno
+/* GPF Mapas V3.8 App-like
    - Cria imagem/mapa em alta qualidade a partir do PDF
    - Salva offline no IndexedDB
    - GPS por cima do mapa controlado pelo app
    - Botão Localizar fixo
 */
 
-const DB_NAME = "gpf-mapas-v3-7-db";
+const DB_NAME = "gpf-mapas-v3-8-db";
 const DB_VERSION = 1;
 const MAP_STORE = "maps";
 const ASSET_STORE = "assets";
@@ -138,7 +138,7 @@ async function init() {
 
 function cleanupOldV3Databases() {
   // Remove bancos antigos para não aparecer PDF antigo.
-  const oldDbs = ["gpf-mapas-v3-db", "gpf-mapas-v3-2-db", "gpf-mapas-v3-3-db", "gpf-mapas-v3-4-db", "gpf-mapas-v3-5-db", "gpf-mapas-v3-6-db"];
+  const oldDbs = ["gpf-mapas-v3-db", "gpf-mapas-v3-2-db", "gpf-mapas-v3-3-db", "gpf-mapas-v3-4-db", "gpf-mapas-v3-5-db", "gpf-mapas-v3-6-db", "gpf-mapas-v3-7-db"];
   for (const name of oldDbs) {
     try {
       indexedDB.deleteDatabase(name);
@@ -1332,12 +1332,15 @@ function applyHomography(h, x, y) {
 function updateConnectionStatus() {
   const online = navigator.onLine;
   ui.connectionStatus.classList.toggle("online", online);
-  ui.connectionStatus.querySelector("span:last-child").textContent = online ? "Online" : "Offline";
+  const value = ui.connectionStatus.querySelector("[data-status-value]");
+  if (value) value.textContent = online ? "Online" : "Offline";
 }
 
 function updateEngineStatus(ready, text) {
   ui.engineStatus.classList.toggle("ready", ready);
-  ui.engineStatus.querySelector("span:last-child").textContent = text || (ready ? "Pronto" : "Motor");
+  const value = ui.engineStatus.querySelector("[data-status-value]");
+  const shortText = ready ? "Pronto" : "Padrão";
+  if (value) value.textContent = shortText;
 }
 
 function updateGpsUi(state = "stopped", message = "") {
@@ -1348,15 +1351,16 @@ function updateGpsUi(state = "stopped", message = "") {
   }
 
   const labels = {
-    stopped: "GPS parado",
-    waiting: "GPS buscando",
-    active: "GPS ativo",
-    inside: "GPS no mapa",
-    outside: "GPS fora",
-    error: "GPS erro",
+    stopped: "Parado",
+    waiting: "Buscando",
+    active: "Ativo",
+    inside: "No mapa",
+    outside: "Fora",
+    error: "Erro",
   };
 
-  ui.gpsStatus.querySelector("span:last-child").textContent = labels[state] || "GPS";
+  const value = ui.gpsStatus.querySelector("[data-status-value]");
+  if (value) value.textContent = labels[state] || "GPS";
 }
 
 function updateLocateButton(state = "", text = "Localizar") {
