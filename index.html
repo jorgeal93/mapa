@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#174f2a" />
+  <meta name="description" content="GPF Mapas - mapas PDF offline com pontos de campo." />
+
+  <title>GPF Mapas</title>
+
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="stylesheet" href="./style.css" />
+</head>
+
+<body>
+  <header class="app-header">
+    <div>
+      <p class="eyebrow">GPF</p>
+      <h1>Mapas</h1>
+    </div>
+
+    <div class="status-stack">
+      <div class="status-pill" id="connectionStatus">
+        <span class="dot"></span>
+        <span>Verificando...</span>
+      </div>
+      <div class="status-pill pdf-status" id="pdfStatus">
+        <span class="dot"></span>
+        <span>PDF local</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="app-shell">
+    <section class="screen active" id="homeScreen">
+      <div class="hero-card">
+        <div>
+          <p class="eyebrow">Mapas offline em PDF</p>
+          <h2>Importe, abra e marque pontos no mapa.</h2>
+          <p class="muted">
+            V1.1 sem CDN obrigatório: tenta usar PDF.js local em <strong>libs/</strong>. Se não encontrar, abre o PDF pelo visualizador nativo do navegador.
+          </p>
+        </div>
+
+        <label class="import-button">
+          <input id="pdfInput" type="file" accept="application/pdf" hidden />
+          <span>Importar PDF</span>
+        </label>
+      </div>
+
+      <section class="panel">
+        <div class="section-title">
+          <div>
+            <p class="eyebrow">Biblioteca</p>
+            <h3>Mapas salvos</h3>
+          </div>
+          <button class="ghost-button" id="refreshMapsBtn">Atualizar</button>
+        </div>
+
+        <div class="empty-state" id="emptyState">
+          <strong>Nenhum mapa salvo ainda.</strong>
+          <span>Importe um PDF para começar.</span>
+        </div>
+
+        <div class="map-list" id="mapList"></div>
+      </section>
+    </section>
+
+    <section class="screen" id="mapScreen">
+      <div class="map-topbar">
+        <button class="icon-button" id="backBtn" title="Voltar">←</button>
+
+        <div class="map-title">
+          <strong id="currentMapName">Mapa</strong>
+          <span id="pageInfo">Página 1 de 1</span>
+        </div>
+
+        <button class="danger-button small" id="deleteCurrentMapBtn">Excluir</button>
+      </div>
+
+      <div class="map-controls">
+        <button id="prevPageBtn">Página anterior</button>
+        <button id="nextPageBtn">Próxima página</button>
+
+        <div class="zoom-group">
+          <button id="zoomOutBtn">−</button>
+          <span id="zoomLabel">100%</span>
+          <button id="zoomInBtn">+</button>
+        </div>
+
+        <button id="resetViewBtn">Centralizar</button>
+        <button class="primary-button" id="newPointBtn">Criar ponto</button>
+      </div>
+
+      <p class="viewer-note" id="viewerNote"></p>
+
+      <div class="map-wrapper" id="mapWrapper">
+        <iframe id="nativePdfFrame" class="native-pdf-frame" title="Visualizador nativo de PDF"></iframe>
+        <div class="native-points-layer" id="nativePointsLayer"></div>
+
+        <div class="map-stage" id="mapStage">
+          <canvas id="pdfCanvas"></canvas>
+          <div class="points-layer" id="pointsLayer"></div>
+        </div>
+      </div>
+
+      <section class="panel point-panel">
+        <div class="section-title">
+          <div>
+            <p class="eyebrow">Pontos</p>
+            <h3>Pontos deste mapa</h3>
+          </div>
+          <button class="ghost-button" id="exportPointsBtn">Exportar CSV</button>
+        </div>
+
+        <div class="empty-state compact" id="emptyPointsState">
+          <span>Nenhum ponto criado neste mapa.</span>
+        </div>
+
+        <div class="points-list" id="pointsList"></div>
+      </section>
+    </section>
+  </main>
+
+  <dialog class="modal" id="pointModal">
+    <form method="dialog" class="modal-card" id="pointForm">
+      <div class="modal-header">
+        <div>
+          <p class="eyebrow">Novo ponto</p>
+          <h3>Salvar ponto no mapa</h3>
+        </div>
+        <button class="icon-button" value="cancel" type="submit">×</button>
+      </div>
+
+      <label>
+        Nome do ponto
+        <input id="pointName" type="text" placeholder="Ex: Parcela 01" required />
+      </label>
+
+      <label>
+        Talhão / Área
+        <input id="pointArea" type="text" placeholder="Ex: Talhão 05" />
+      </label>
+
+      <label>
+        Observação
+        <textarea id="pointNote" rows="4" placeholder="Digite uma observação..."></textarea>
+      </label>
+
+      <div class="modal-actions">
+        <button class="ghost-button" value="cancel" type="submit">Cancelar</button>
+        <button class="primary-button" id="savePointBtn" value="default" type="submit">Salvar ponto</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="./script.js"></script>
+</body>
+</html>

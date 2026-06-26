@@ -1,0 +1,19 @@
+{
+  "name": "GPF Mapas",
+  "short_name": "GPF Mapas",
+  "description": "App separado para abrir mapas em PDF, salvar offline e marcar pontos.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#07140c",
+  "theme_color": "#174f2a",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='192' height='192' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='44' fill='%23174f2a'/%3E%3Cpath d='M45 142V50l30 14 42-18 30 14v92l-30-14-42 18-30-14Z' fill='%2328c76f'/%3E%3Cpath d='M75 64v92M117 46v92' stroke='white' stroke-width='8' stroke-linecap='round' opacity='.9'/%3E%3Ccircle cx='96' cy='96' r='16' fill='white'/%3E%3C/svg%3E",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

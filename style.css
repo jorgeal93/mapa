@@ -1,0 +1,607 @@
+:root {
+  --bg: #07140c;
+  --bg-soft: #0d1e13;
+  --card: rgba(255, 255, 255, 0.08);
+  --card-strong: rgba(255, 255, 255, 0.12);
+  --border: rgba(255, 255, 255, 0.12);
+  --text: #f3fff6;
+  --muted: #a8b9ad;
+  --primary: #28c76f;
+  --primary-dark: #1d9653;
+  --danger: #ff5a6a;
+  --shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+  --radius: 24px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background:
+    radial-gradient(circle at top left, rgba(40, 199, 111, 0.16), transparent 35%),
+    linear-gradient(135deg, #06110a, #0a1f11 45%, #06110a);
+  color: var(--text);
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+body {
+  padding: env(safe-area-inset-top) 14px env(safe-area-inset-bottom);
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+button {
+  border: 0;
+  cursor: pointer;
+}
+
+.app-header {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 20px 4px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.app-header h1 {
+  margin: 0;
+  font-size: clamp(30px, 6vw, 48px);
+  letter-spacing: -0.05em;
+}
+
+.eyebrow {
+  margin: 0 0 4px;
+  color: var(--primary);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--muted);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--danger);
+}
+
+.status-pill.online .dot {
+  background: var(--primary);
+}
+
+.app-shell {
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+.screen {
+  display: none;
+}
+
+.screen.active {
+  display: block;
+}
+
+.hero-card,
+.panel,
+.map-topbar,
+.map-controls {
+  background: var(--card);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(18px);
+}
+
+.hero-card {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 18px;
+  padding: 24px;
+  border-radius: var(--radius);
+  min-height: 180px;
+}
+
+.hero-card h2 {
+  max-width: 760px;
+  margin: 0 0 10px;
+  font-size: clamp(28px, 5vw, 54px);
+  line-height: 0.95;
+  letter-spacing: -0.06em;
+}
+
+.muted {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.import-button,
+.primary-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 18px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, var(--primary), #67e89d);
+  color: #031008;
+  font-weight: 900;
+  box-shadow: 0 12px 32px rgba(40, 199, 111, 0.28);
+  white-space: nowrap;
+}
+
+.panel {
+  margin-top: 16px;
+  padding: 18px;
+  border-radius: var(--radius);
+}
+
+.section-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.section-title h3 {
+  margin: 0;
+  font-size: 22px;
+  letter-spacing: -0.03em;
+}
+
+.ghost-button,
+.map-controls button,
+.icon-button,
+.danger-button {
+  min-height: 42px;
+  padding: 0 14px;
+  border-radius: 14px;
+  background: var(--card-strong);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.danger-button {
+  color: #ffd6da;
+  border-color: rgba(255, 90, 106, 0.35);
+  background: rgba(255, 90, 106, 0.12);
+}
+
+.small {
+  min-height: 38px;
+  font-size: 13px;
+}
+
+.icon-button {
+  min-width: 42px;
+  padding: 0;
+  font-size: 22px;
+}
+
+.empty-state {
+  display: grid;
+  gap: 4px;
+  place-items: center;
+  min-height: 140px;
+  border: 1px dashed var(--border);
+  border-radius: 20px;
+  color: var(--muted);
+  text-align: center;
+  padding: 18px;
+}
+
+.empty-state.compact {
+  min-height: 70px;
+}
+
+.map-list,
+.points-list {
+  display: grid;
+  gap: 12px;
+}
+
+.map-card,
+.point-card {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 14px;
+  padding: 14px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid var(--border);
+}
+
+.map-card strong,
+.point-card strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.map-card span,
+.point-card span {
+  display: block;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.card-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.map-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 0 0 22px 22px;
+}
+
+.map-title {
+  min-width: 0;
+}
+
+.map-title strong,
+.map-title span {
+  display: block;
+}
+
+.map-title strong {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.map-title span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.map-controls {
+  margin: 12px 0;
+  padding: 12px;
+  border-radius: 22px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.zoom-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 8px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.zoom-group button {
+  min-width: 38px;
+  padding: 0;
+}
+
+.zoom-group span {
+  min-width: 54px;
+  text-align: center;
+  font-weight: 800;
+}
+
+.map-wrapper {
+  position: relative;
+  height: min(68vh, 720px);
+  min-height: 420px;
+  overflow: hidden;
+  border-radius: 24px;
+  background:
+    linear-gradient(45deg, rgba(255, 255, 255, 0.04) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(255, 255, 255, 0.04) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, rgba(255, 255, 255, 0.04) 75%),
+    linear-gradient(-45deg, transparent 75%, rgba(255, 255, 255, 0.04) 75%);
+  background-size: 24px 24px;
+  background-position: 0 0, 0 12px, 12px -12px, -12px 0;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  touch-action: none;
+}
+
+.map-stage {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform-origin: 0 0;
+  will-change: transform;
+  cursor: grab;
+}
+
+.map-stage.dragging {
+  cursor: grabbing;
+}
+
+#pdfCanvas {
+  display: block;
+  background: white;
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.38);
+}
+
+.points-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.map-point {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  translate: -50% -100%;
+  pointer-events: auto;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  background: var(--danger);
+  border: 3px solid #fff;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.38);
+}
+
+.map-point span {
+  position: absolute;
+  inset: 4px;
+  border-radius: 50%;
+  background: #fff;
+}
+
+.point-panel {
+  margin-bottom: 22px;
+}
+
+.modal {
+  width: min(520px, calc(100% - 24px));
+  border: 0;
+  padding: 0;
+  border-radius: 24px;
+  background: transparent;
+  color: var(--text);
+}
+
+.modal::backdrop {
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+}
+
+.modal-card {
+  padding: 18px;
+  border-radius: 24px;
+  background: #0b1d12;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+
+.modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 24px;
+}
+
+label {
+  display: grid;
+  gap: 7px;
+  margin-top: 12px;
+  color: var(--muted);
+  font-weight: 700;
+  font-size: 14px;
+}
+
+input,
+textarea {
+  width: 100%;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text);
+  border-radius: 16px;
+  padding: 13px 14px;
+  outline: none;
+}
+
+textarea {
+  resize: vertical;
+}
+
+input:focus,
+textarea:focus {
+  border-color: rgba(40, 199, 111, 0.75);
+  box-shadow: 0 0 0 4px rgba(40, 199, 111, 0.12);
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(18px + env(safe-area-inset-bottom));
+  transform: translateX(-50%) translateY(30px);
+  max-width: calc(100% - 24px);
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: #f3fff6;
+  color: #07140c;
+  font-weight: 800;
+  box-shadow: var(--shadow);
+  opacity: 0;
+  pointer-events: none;
+  transition: 0.25s ease;
+  z-index: 20;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+@media (max-width: 720px) {
+  body {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .app-header {
+    padding-top: 12px;
+  }
+
+  .hero-card {
+    grid-template-columns: 1fr;
+    padding: 18px;
+  }
+
+  .import-button {
+    width: 100%;
+  }
+
+  .map-card,
+  .point-card {
+    grid-template-columns: 1fr;
+  }
+
+  .card-actions {
+    justify-content: stretch;
+  }
+
+  .card-actions button {
+    flex: 1;
+  }
+
+  .map-controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .zoom-group {
+    grid-column: span 2;
+    justify-content: center;
+    min-height: 44px;
+  }
+
+  .map-wrapper {
+    height: 62vh;
+    min-height: 360px;
+  }
+}
+
+.status-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+.pdf-status.ready .dot {
+  background: var(--primary);
+}
+
+.viewer-note {
+  margin: -4px 0 10px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.native-pdf-frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: none;
+  background: white;
+}
+
+.native-points-layer {
+  position: absolute;
+  inset: 0;
+  display: none;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.map-wrapper.native-mode .native-pdf-frame,
+.map-wrapper.native-mode .native-points-layer {
+  display: block;
+}
+
+.map-wrapper.native-mode .map-stage {
+  display: none;
+}
+
+.map-wrapper.placing-native-point .native-pdf-frame {
+  pointer-events: none;
+}
+
+.native-map-point {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  translate: -50% -100%;
+  pointer-events: auto;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  background: var(--danger);
+  border: 3px solid #fff;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.38);
+}
+
+.native-map-point span {
+  position: absolute;
+  inset: 4px;
+  border-radius: 50%;
+  background: #fff;
+}
+
+@media (max-width: 720px) {
+  .status-stack {
+    align-items: flex-start;
+  }
+}
