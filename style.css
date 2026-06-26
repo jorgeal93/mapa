@@ -1136,3 +1136,182 @@ body.map-open #mapScreen {
     max-height: 18dvh;
   }
 }
+
+
+/* ===== V1.7 Correção do mapa no celular ===== */
+
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.map-wrapper {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+#pdfCanvas {
+  display: block !important;
+  max-width: none !important;
+  max-height: none !important;
+}
+
+body.map-open {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+body.map-open .app-shell {
+  height: 100dvh;
+  overflow: hidden;
+}
+
+body.map-open #mapScreen.screen.active {
+  display: flex !important;
+  flex-direction: column;
+  height: 100dvh;
+  min-height: 100dvh;
+  overflow: hidden;
+}
+
+body.map-open .map-topbar {
+  flex: 0 0 auto;
+}
+
+body.map-open .map-controls {
+  flex: 0 0 auto;
+}
+
+body.map-open .gps-info,
+body.map-open .viewer-note {
+  flex: 0 0 auto;
+}
+
+body.map-open .map-wrapper {
+  flex: 1 1 auto;
+  height: auto !important;
+  min-height: 360px !important;
+  width: 100% !important;
+  overflow: hidden !important;
+}
+
+body.map-open .point-panel {
+  flex: 0 0 auto;
+  max-height: 24dvh;
+  overflow: hidden;
+  margin-top: 8px;
+  margin-bottom: 6px;
+}
+
+body.map-open .points-list {
+  max-height: 15dvh;
+  overflow: auto;
+}
+
+.map-stage {
+  transform-origin: 0 0 !important;
+}
+
+.map-stage.rendering::after {
+  content: "HD";
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  padding: 6px 9px;
+  border-radius: 999px;
+  background: rgba(7, 20, 12, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #bfffd8;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  z-index: 12;
+  pointer-events: none;
+}
+
+@media (max-width: 720px) {
+  body.map-open {
+    padding: 0 6px 6px;
+  }
+
+  body.map-open .app-header {
+    display: none !important;
+  }
+
+  body.map-open .map-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 80;
+    margin: 0 -6px;
+    border-radius: 0 0 18px 18px;
+  }
+
+  body.map-open .map-controls {
+    position: sticky;
+    top: 50px;
+    z-index: 70;
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    gap: 8px;
+    padding: 8px;
+    margin: 6px 0;
+    border-radius: 16px;
+  }
+
+  body.map-open .map-controls::-webkit-scrollbar {
+    display: none;
+  }
+
+  body.map-open .map-controls button,
+  body.map-open .zoom-group {
+    flex: 0 0 auto;
+    min-height: 38px;
+    font-size: 12px;
+  }
+
+  body.map-open .gps-info {
+    margin: 4px 0;
+    padding: 8px 10px;
+    font-size: 12px;
+    line-height: 1.35;
+  }
+
+  body.map-open .viewer-note {
+    margin: 3px 0 6px;
+    font-size: 12px;
+  }
+
+  body.map-open .map-wrapper {
+    min-height: 330px !important;
+    border-radius: 16px;
+  }
+
+  body.map-open .point-panel {
+    max-height: 23dvh;
+    padding: 10px;
+  }
+
+  body.map-open .point-panel .section-title {
+    margin-bottom: 6px;
+  }
+
+  body.map-open .point-panel h3 {
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 390px) {
+  body.map-open .map-wrapper {
+    min-height: 300px !important;
+  }
+
+  body.map-open .point-panel {
+    max-height: 20dvh;
+  }
+}

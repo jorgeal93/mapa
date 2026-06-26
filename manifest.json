@@ -1,7 +1,7 @@
 {
-  "name": "GPF Mapas Touch Fix",
+  "name": "GPF Mapas V1.7",
   "short_name": "GPF Mapas",
-  "description": "GPF Mapas V1.6 - zoom com dois dedos preso no mapa, sem aproximar a aba inteira.",
+  "description": "GPF Mapas V1.7 - correção para mapa aparecer no celular, zoom de dois dedos e render HD.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

@@ -1,26 +1,26 @@
-# GPF Mapas V1.6 Touch Fix
+# GPF Mapas V1.7 Mapa Corrigido
 
-Correções:
+Correções desta versão:
 
-- O zoom com dois dedos agora fica preso dentro do mapa.
-- O navegador não deve mais aproximar a aba inteira.
-- Adicionado bloqueio de gesturestart/gesturechange para iPhone/Safari.
-- Adicionado touchstart/touchmove com passive:false direto no mapa.
-- Arrastar com um dedo continua funcionando.
-- Pinça com dois dedos aproxima/afasta o mapa.
-- Mantém PDF.js, GPS, GeoPDF, pontos e CSV.
+- Corrige o mapa que não aparecia no celular.
+- Corrige a área do mapa que ficava com altura 0 em alguns aparelhos.
+- Mantém a tela do mapa ocupando mais espaço no celular.
+- Zoom com dois dedos fica preso dentro do mapa.
+- Bloqueia o zoom da aba inteira no iPhone/Safari.
+- Renderiza o PDF em HD e tenta melhorar a nitidez depois do zoom.
+- Mantém GPS real, GeoPDF, pontos e CSV.
 
-## Sobre nitidez
+## Como testar
 
-O modo nativo/offline fica mais nítido porque o celular usa o leitor de PDF próprio e redesenha o PDF vetorial.
-No modo PDF.js o app renderiza em canvas. A V1.6 tenta redesenhar em HD depois do zoom, mas PDF muito grande pode exigir alguns segundos.
-
-Para testar:
-
-1. Suba no GitHub Pages.
+1. Suba a pasta no GitHub Pages.
 2. Abra no celular.
 3. Aperte "Limpar cache".
-4. Feche e abra novamente.
+4. Feche o app/navegador e abra de novo.
 5. Importe o PDF.
 6. Abra o mapa.
-7. Use dois dedos diretamente em cima do mapa.
+7. Use dois dedos em cima do mapa para dar zoom.
+
+## Observação
+
+O modo nativo do celular ainda pode parecer mais nítido porque é o leitor de PDF próprio do aparelho.
+No modo GPS, o app usa canvas para conseguir colocar GPS e pontos por cima do mapa.
