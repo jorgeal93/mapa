@@ -9,7 +9,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="GPF Mapas" />
   <meta name="description" content="GPF Mapas V3 - mapa real offline com GPS." />
-  <title>GPF Mapas V3.8</title>
+  <title>GPF Mapas V3.9</title>
   <link rel="manifest" href="./manifest.json" />
   <link rel="stylesheet" href="./style.css" />
 </head>
@@ -19,7 +19,7 @@
     <div>
       <p class="eyebrow">GPF</p>
       <h1>Mapas</h1>
-      <p class="muted">V3.8 App</p>
+      <p class="muted">V3.9 Native</p>
     </div>
 
     <div class="status-stack">
@@ -54,7 +54,7 @@
           <p class="eyebrow">Offline + GPS</p>
           <h2>Mapa nítido, controlado pelo app, com GPS em cima.</h2>
           <p class="muted">
-            Visual com mais cara de aplicativo.
+            Visual ainda mais próximo de aplicativo nativo.
           </p>
         </div>
 
@@ -68,9 +68,9 @@
         <div class="section-title">
           <div>
             <p class="eyebrow">Biblioteca</p>
-            <h3>Mapas salvos</h3>
+            <h3>Mapas</h3>
           </div>
-          <div class="top-actions">
+          <div class="top-actions app-tools">
             <button class="toolbar-button" id="refreshMapsBtn" type="button" onclick="window.gpfApp?.refresh?.()"><span class="btn-icon">↻</span><span>Atualizar</span></button>
             <button class="toolbar-button danger-soft" id="resetAllBtn" type="button" onclick="window.gpfApp?.reset?.()"><span class="btn-icon">⌫</span><span>Resetar</span></button>
             <button class="toolbar-button" id="clearCacheBtn" type="button" onclick="window.gpfApp?.clearCache?.()"><span class="btn-icon">⚡</span><span>Cache</span></button>
@@ -84,6 +84,22 @@
 
         <div class="map-list" id="mapList"></div>
       </section>
+      
+      <nav class="bottom-dock" aria-label="Ações rápidas">
+        <button class="dock-action primary" type="button" onclick="document.getElementById('pdfInput')?.click()">
+          <span class="dock-icon">＋</span>
+          <span>Importar</span>
+        </button>
+        <button class="dock-action" type="button" onclick="window.gpfApp?.refresh?.()">
+          <span class="dock-icon">↻</span>
+          <span>Atualizar</span>
+        </button>
+        <button class="dock-action" type="button" onclick="window.gpfApp?.clearCache?.()">
+          <span class="dock-icon">⚡</span>
+          <span>Cache</span>
+        </button>
+      </nav>
+
     </section>
 
     <section class="screen map-screen" id="mapScreen">

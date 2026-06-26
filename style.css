@@ -1566,3 +1566,239 @@ button.clicked {
     font-size: 31px;
   }
 }
+
+
+/* ===== V3.9 Native Feel ===== */
+
+body {
+  background:
+    radial-gradient(circle at 0% 0%, rgba(40,199,111,.14), transparent 28%),
+    radial-gradient(circle at 100% 0%, rgba(255,255,255,.04), transparent 22%),
+    linear-gradient(180deg, #051109 0%, #07150c 100%);
+}
+
+.app-shell {
+  position: relative;
+}
+
+/* Cabeçalho ainda mais limpo */
+.app-header {
+  padding-top: 12px;
+  padding-bottom: 10px;
+}
+
+.brand-mark {
+  width: 44px;
+  height: 44px;
+  border-radius: 15px;
+}
+
+.brand-copy h1 {
+  font-size: clamp(32px, 5vw, 44px);
+  letter-spacing: -.05em;
+}
+
+.brand-copy .muted {
+  opacity: .9;
+}
+
+/* Status como pequenos cards de app */
+.status-mini {
+  min-height: 50px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(255,255,255,.10), rgba(255,255,255,.045));
+  border-color: rgba(255,255,255,.10);
+}
+
+.status-copy strong {
+  font-size: 12px;
+}
+
+.status-copy small {
+  font-size: 9px;
+}
+
+/* Hero mais compacto */
+.compact-hero {
+  min-height: 128px;
+  padding: 18px 20px;
+}
+
+.compact-hero h2 {
+  font-size: clamp(24px, 4.4vw, 38px);
+  max-width: 460px;
+}
+
+.compact-hero .hero-tags span {
+  min-height: 30px;
+  font-size: 11px;
+}
+
+.hero-import {
+  min-height: 56px;
+  min-width: 180px;
+  border-radius: 20px;
+}
+
+/* Ferramentas superiores mais discretas */
+.app-tools {
+  padding: 5px;
+  border-radius: 18px;
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.08);
+}
+
+.app-tools .toolbar-button {
+  min-height: 44px;
+  border-radius: 14px;
+  padding: 0 12px;
+}
+
+/* Painel com cara de tela de app */
+.panel {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.05));
+  border-radius: 26px;
+  border-color: rgba(255,255,255,.10);
+}
+
+/* Cards mais premium */
+.map-card {
+  border-radius: 20px;
+  box-shadow:
+    0 12px 28px rgba(0,0,0,.20),
+    inset 0 1px 0 rgba(255,255,255,.08);
+}
+
+/* Dock inferior estilo app */
+.bottom-dock {
+  position: sticky;
+  bottom: calc(10px + env(safe-area-inset-bottom));
+  z-index: 30;
+  display: grid;
+  grid-template-columns: 1.15fr 1fr 1fr;
+  gap: 10px;
+  margin-top: 14px;
+  padding: 10px;
+  border-radius: 24px;
+  background: rgba(8, 22, 12, .86);
+  border: 1px solid rgba(255,255,255,.09);
+  backdrop-filter: blur(18px);
+  box-shadow:
+    0 18px 40px rgba(0,0,0,.30),
+    inset 0 1px 0 rgba(255,255,255,.06);
+}
+
+.dock-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 52px;
+  padding: 0 12px;
+  border-radius: 18px;
+  color: #eefbf2;
+  background: rgba(255,255,255,.07);
+  border: 1px solid rgba(255,255,255,.08);
+  font-weight: 900;
+  letter-spacing: -.01em;
+}
+
+.dock-action .dock-icon {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.12);
+}
+
+.dock-action.primary {
+  background: linear-gradient(135deg, var(--primary), #7ef2aa);
+  color: #041109;
+  box-shadow:
+    0 14px 30px rgba(40,199,111,.24),
+    inset 0 1px 0 rgba(255,255,255,.28);
+}
+
+.dock-action.primary .dock-icon {
+  background: rgba(0,0,0,.10);
+}
+
+/* Esconde dock na tela do mapa */
+body.map-open .bottom-dock {
+  display: none !important;
+}
+
+/* Localizar com visual app premium */
+.locate-button {
+  box-shadow:
+    0 18px 46px rgba(0,0,0,.44),
+    0 0 0 1px rgba(255,255,255,.13),
+    inset 0 1px 0 rgba(255,255,255,.32);
+}
+
+/* Mobile */
+@media (max-width: 820px) {
+  .compact-hero {
+    padding: 16px;
+  }
+
+  .compact-hero h2 {
+    font-size: clamp(26px, 7vw, 34px);
+  }
+
+  .app-tools {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .app-tools .toolbar-button {
+    min-height: 46px;
+  }
+
+  .bottom-dock {
+    grid-template-columns: 1.15fr 1fr 1fr;
+    gap: 8px;
+    margin-top: 12px;
+    padding: 8px;
+    border-radius: 22px;
+  }
+
+  .dock-action {
+    min-height: 50px;
+    padding: 0 8px;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 11px;
+  }
+
+  .dock-action .dock-icon {
+    width: 22px;
+    height: 22px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 520px) {
+  .brand-copy h1 {
+    font-size: 34px;
+  }
+
+  .status-stack {
+    gap: 6px;
+  }
+
+  .compact-hero h2 {
+    font-size: 28px;
+  }
+
+  .hero-import {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .bottom-dock {
+    position: sticky;
+    bottom: calc(8px + env(safe-area-inset-bottom));
+  }
+}

@@ -1,7 +1,7 @@
 {
-  "name": "GPF Mapas V3.8",
+  "name": "GPF Mapas V3.9",
   "short_name": "GPF Mapas",
-  "description": "GPF Mapas V3.8 - visual mais parecido com aplicativo.",
+  "description": "GPF Mapas V3.9 - visual tipo app nativo.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

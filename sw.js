@@ -1,4 +1,4 @@
-const CACHE_NAME = "gpf-mapas-v3-8-app-like";
+const CACHE_NAME = "gpf-mapas-v3-9-native-feel";
 const APP_SHELL = [
   "./",
   "./index.html",

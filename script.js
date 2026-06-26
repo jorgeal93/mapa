@@ -1,11 +1,11 @@
-/* GPF Mapas V3.8 App-like
+/* GPF Mapas V3.9 Native Feel
    - Cria imagem/mapa em alta qualidade a partir do PDF
    - Salva offline no IndexedDB
    - GPS por cima do mapa controlado pelo app
    - Botão Localizar fixo
 */
 
-const DB_NAME = "gpf-mapas-v3-8-db";
+const DB_NAME = "gpf-mapas-v3-9-db";
 const DB_VERSION = 1;
 const MAP_STORE = "maps";
 const ASSET_STORE = "assets";
@@ -138,7 +138,7 @@ async function init() {
 
 function cleanupOldV3Databases() {
   // Remove bancos antigos para não aparecer PDF antigo.
-  const oldDbs = ["gpf-mapas-v3-db", "gpf-mapas-v3-2-db", "gpf-mapas-v3-3-db", "gpf-mapas-v3-4-db", "gpf-mapas-v3-5-db", "gpf-mapas-v3-6-db", "gpf-mapas-v3-7-db"];
+  const oldDbs = ["gpf-mapas-v3-db", "gpf-mapas-v3-2-db", "gpf-mapas-v3-3-db", "gpf-mapas-v3-4-db", "gpf-mapas-v3-5-db", "gpf-mapas-v3-6-db", "gpf-mapas-v3-7-db", "gpf-mapas-v3-8-db"];
   for (const name of oldDbs) {
     try {
       indexedDB.deleteDatabase(name);
