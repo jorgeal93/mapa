@@ -899,3 +899,235 @@ textarea {
     max-height: 10dvh;
   }
 }
+
+
+/* ===== V2.0 Localizar ===== */
+
+body.simple-map .map-controls {
+  display: none !important;
+}
+
+body.simple-map .gps-info,
+body.simple-map .viewer-note {
+  display: none !important;
+}
+
+body.simple-map .point-panel {
+  display: none !important;
+}
+
+body.simple-map .map-wrapper {
+  flex: 1 1 auto;
+  min-height: 0 !important;
+  height: auto !important;
+  border-radius: 0;
+  border-left: 0;
+  border-right: 0;
+}
+
+body.simple-map #mapScreen.screen.active {
+  display: flex !important;
+  flex-direction: column;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+body.simple-map .map-topbar {
+  flex: 0 0 auto;
+}
+
+.floating-map-actions.single {
+  display: block;
+  right: 14px;
+  bottom: calc(18px + env(safe-area-inset-bottom));
+}
+
+.floating-map-actions.single .locate-button {
+  min-width: 132px;
+  min-height: 54px;
+  padding: 0 20px;
+  border-radius: 999px;
+  font-size: 15px;
+  box-shadow: 0 16px 38px rgba(0, 0, 0, .42);
+}
+
+.floating-map-actions.single .locate-button.locating {
+  background: rgba(255, 209, 102, .94);
+  color: #251b00;
+}
+
+.floating-map-actions.single .locate-button.active {
+  background: linear-gradient(135deg, var(--primary), #7ef2aa);
+  color: #031009;
+}
+
+.floating-map-actions.single .locate-button.outside {
+  background: rgba(255, 93, 108, .94);
+  color: #fff;
+}
+
+body.simple-map .map-title span::after {
+  content: " • Nítido + GPS";
+}
+
+body.simple-map .map-topbar .danger-button {
+  display: none;
+}
+
+@media (max-width: 720px) {
+  body.simple-map {
+    padding: 0;
+  }
+
+  body.simple-map .map-topbar {
+    margin: 0;
+    border-radius: 0 0 16px 16px;
+  }
+
+  body.simple-map .map-wrapper {
+    border-radius: 0;
+  }
+
+  .floating-map-actions.single {
+    right: 12px;
+    bottom: calc(14px + env(safe-area-inset-bottom));
+  }
+
+  .floating-map-actions.single .locate-button {
+    min-width: 124px;
+    min-height: 52px;
+    font-size: 14px;
+  }
+}
+
+
+/* ===== V2.1 Mapa limpo automático ===== */
+
+/* Remove de vez a faixa marcada em vermelho */
+.clean-map-screen .map-controls,
+.clean-map-screen .gps-info,
+.clean-map-screen .viewer-note,
+.clean-map-screen .point-panel,
+#mapScreen .map-controls,
+#mapScreen .gps-info,
+#mapScreen .viewer-note,
+#mapScreen .point-panel {
+  display: none !important;
+}
+
+/* Mesmo se a classe do body falhar, a tela do mapa fica limpa */
+#mapScreen.screen.active {
+  display: flex !important;
+  flex-direction: column;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+#mapScreen.screen.active .map-topbar {
+  flex: 0 0 auto;
+}
+
+#mapScreen.screen.active .map-wrapper {
+  flex: 1 1 auto;
+  height: auto !important;
+  min-height: 0 !important;
+  width: 100%;
+  border-radius: 0 0 18px 18px;
+}
+
+/* Botão único */
+.floating-map-actions.single {
+  position: absolute;
+  right: 14px;
+  bottom: calc(16px + env(safe-area-inset-bottom));
+  z-index: 120;
+  display: block !important;
+}
+
+.floating-map-actions.single .locate-button {
+  min-width: 132px;
+  min-height: 54px;
+  padding: 0 20px;
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 950;
+  background: linear-gradient(135deg, var(--primary), #7ef2aa);
+  color: #031009;
+  box-shadow: 0 18px 42px rgba(0, 0, 0, .42);
+}
+
+.floating-map-actions.single .locate-button.locating {
+  background: rgba(255, 209, 102, .96);
+  color: #251b00;
+}
+
+.floating-map-actions.single .locate-button.outside {
+  background: rgba(255, 93, 108, .96);
+  color: #fff;
+}
+
+.floating-map-actions.single .locate-button.active {
+  background: linear-gradient(135deg, var(--primary), #7ef2aa);
+  color: #031009;
+}
+
+/* Topo mais limpo */
+#mapScreen .map-topbar .danger-button {
+  display: none !important;
+}
+
+#mapScreen .map-title span::after {
+  content: " • Auto GPS";
+}
+
+/* Em celular ocupa a tela toda */
+@media (max-width: 720px) {
+  body {
+    padding: 8px;
+  }
+
+  body.map-open,
+  body.simple-map {
+    padding: 0 !important;
+    overflow: hidden;
+  }
+
+  body.map-open .app-header,
+  body.simple-map .app-header {
+    display: none !important;
+  }
+
+  body.map-open .app-shell,
+  body.simple-map .app-shell {
+    height: 100dvh;
+    overflow: hidden;
+    width: 100%;
+  }
+
+  #mapScreen.screen.active {
+    height: 100dvh;
+    min-height: 100dvh;
+  }
+
+  #mapScreen.screen.active .map-topbar {
+    margin: 0;
+    border-radius: 0 0 16px 16px;
+  }
+
+  #mapScreen.screen.active .map-wrapper {
+    border-radius: 0;
+    border-left: 0;
+    border-right: 0;
+  }
+
+  .floating-map-actions.single {
+    right: 12px;
+    bottom: calc(14px + env(safe-area-inset-bottom));
+  }
+
+  .floating-map-actions.single .locate-button {
+    min-width: 126px;
+    min-height: 52px;
+    font-size: 14px;
+  }
+}

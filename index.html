@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <meta name="theme-color" content="#174f2a" />
   <meta name="description" content="GPF Mapas - PDF/GeoPDF com GPS e zoom no celular." />
-  <title>GPF Mapas V1.9</title>
+  <title>GPF Mapas V2.1</title>
   <link rel="manifest" href="./manifest.json" />
   <link rel="stylesheet" href="./style.css" />
 </head>
@@ -15,7 +15,7 @@
     <div>
       <p class="eyebrow">GPF</p>
       <h1>Mapas</h1>
-      <p class="muted">V1.9 GPS Flutuante</p>
+      <p class="muted">V2.1 Automático</p>
     </div>
 
     <div class="status-stack">
@@ -32,7 +32,7 @@
           <p class="eyebrow">Mapas offline</p>
           <h2>Importe PDF, abra no celular e localize com GPS.</h2>
           <p class="muted">
-            Agora com GPS flutuante sempre visível e modo Nítido para melhorar o PDF no zoom.
+            Ao abrir o mapa, qualidade, GPS e localização entram automaticamente. Sem faixa de botões.
           </p>
         </div>
 
@@ -63,7 +63,7 @@
       </section>
     </section>
 
-    <section class="screen" id="mapScreen">
+    <section class="screen clean-map-screen" id="mapScreen">
       <div class="map-topbar">
         <button class="icon-button" id="backBtn" title="Voltar">←</button>
         <div class="map-title">
@@ -73,7 +73,7 @@
         <button class="danger-button small" id="deleteCurrentMapBtn">Excluir</button>
       </div>
 
-      <div class="map-controls">
+      <div class="map-controls" hidden aria-hidden="true">
         <button id="prevPageBtn">← Página</button>
         <button id="nextPageBtn">Página →</button>
 
@@ -99,15 +99,12 @@
         <button id="saveGpsPointBtn" disabled>Ponto GPS</button>
       </div>
 
-      <div class="gps-info" id="gpsInfo">GPS desligado.</div>
-      <div class="viewer-note" id="viewerNote">Abra um mapa para começar.</div>
+      <div class="gps-info" id="gpsInfo" hidden aria-hidden="true">GPS desligado.</div>
+      <div class="viewer-note" id="viewerNote" hidden aria-hidden="true">Abra um mapa para começar.</div>
 
       <div class="map-wrapper" id="mapWrapper">
-        <div class="floating-map-actions" id="floatingMapActions">
-          <button class="float-main" id="floatGpsBtn" type="button">GPS</button>
-          <button id="floatCenterGpsBtn" type="button" disabled>Ir</button>
-          <button id="floatSaveGpsBtn" type="button" disabled>+</button>
-          <button id="floatNativeBtn" type="button">Nítido</button>
+        <div class="floating-map-actions single" id="floatingMapActions">
+          <button class="float-main locate-button" id="locateBtn" type="button">Localizar</button>
         </div>
 
         <div class="map-stage" id="mapStage">
@@ -119,7 +116,7 @@
         <iframe id="nativePdfFrame" class="native-pdf-frame" title="Visualizador PDF"></iframe>
       </div>
 
-      <section class="panel point-panel">
+      <section class="panel point-panel" hidden aria-hidden="true">
         <div class="section-title">
           <div>
             <p class="eyebrow">Pontos</p>
