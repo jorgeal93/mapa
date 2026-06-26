@@ -1,0 +1,2 @@
+A pasta libs é opcional. O app tenta usar PDF.js online/CDN e depois salva para offline.
+Se no futuro quiser deixar 100% embutido, crie uma pasta libs e coloque pdf.min.js e pdf.worker.min.js.

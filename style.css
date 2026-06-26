@@ -1802,3 +1802,77 @@ body.map-open .bottom-dock {
     bottom: calc(8px + env(safe-area-inset-bottom));
   }
 }
+
+
+/* ===== CampoGeo V4.0 — Logo integrada ===== */
+
+.brand-block {
+  gap: 13px;
+}
+
+.brand-logo-img {
+  width: 56px;
+  height: 56px;
+  border-radius: 18px;
+  object-fit: cover;
+  display: block;
+  box-shadow:
+    0 14px 30px rgba(0,0,0,.34),
+    0 0 0 1px rgba(126,242,170,.30),
+    inset 0 1px 0 rgba(255,255,255,.25);
+  background: #06200e;
+}
+
+.brand-mark {
+  display: none !important;
+}
+
+.brand-copy h1 {
+  font-size: clamp(32px, 5vw, 46px);
+}
+
+.compact-hero h2 {
+  font-size: clamp(36px, 6vw, 58px);
+  letter-spacing: -.06em;
+  color: #f7fff8;
+}
+
+.hero-tags span:first-child::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 99px;
+  background: var(--primary);
+  margin-right: 7px;
+}
+
+.hero-import {
+  box-shadow:
+    0 18px 42px rgba(40,199,111,.30),
+    0 0 0 1px rgba(255,255,255,.12),
+    inset 0 1px 0 rgba(255,255,255,.34);
+}
+
+@media (max-width: 820px) {
+  .brand-logo-img {
+    width: 48px;
+    height: 48px;
+    border-radius: 16px;
+  }
+
+  .compact-hero h2 {
+    font-size: clamp(34px, 10vw, 46px);
+  }
+}
+
+@media (max-width: 380px) {
+  .brand-logo-img {
+    width: 44px;
+    height: 44px;
+    border-radius: 15px;
+  }
+
+  .brand-copy h1 {
+    font-size: 30px;
+  }
+}

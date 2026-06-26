@@ -1,10 +1,16 @@
-const CACHE_NAME = "gpf-mapas-v3-9-native-feel";
+const CACHE_NAME = "campogeo-v4-1-sem-pastas";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./style.css",
   "./script.js",
-  "./manifest.json"
+  "./manifest.json",
+  "./campogeo-logo.png",
+  "./icon-512.png",
+  "./icon-192.png",
+  "./apple-touch-icon.png",
+  "./icon-96.png",
+  "./icon-48.png"
 ];
 
 const PDFJS_ASSETS = [
