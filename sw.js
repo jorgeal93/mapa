@@ -1,4 +1,4 @@
-const CACHE_NAME = "gpf-mapas-v2-1-mapa-limpo-auto";
+const CACHE_NAME = "gpf-mapas-v2-3-gps-corrigido";
 const APP_SHELL = [
   "./",
   "./index.html",

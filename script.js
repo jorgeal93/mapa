@@ -56,6 +56,7 @@ const ui = {
   zoomLabel: $("#zoomLabel"),
   resetViewBtn: $("#resetViewBtn"),
   qualitySelect: $("#qualitySelect"),
+  locateBtn: $("#locateBtn"),
   newPointBtn: $("#newPointBtn"),
   gpsBtn: $("#gpsBtn"),
   centerGpsBtn: $("#centerGpsBtn"),
@@ -67,6 +68,7 @@ const ui = {
   mapWrapper: $("#mapWrapper"),
   mapStage: $("#mapStage"),
   canvas: $("#pdfCanvas"),
+  svgLayer: $("#svgLayer"),
   pointsLayer: $("#pointsLayer"),
   gpsLayer: $("#gpsLayer"),
   nativePdfFrame: $("#nativePdfFrame"),
@@ -273,7 +275,7 @@ function setupEvents() {
   ui.clearCacheBtn.addEventListener("click", clearCacheAndReload);
 
   ui.backBtn.addEventListener("click", async () => {
-    document.body.classList.remove("map-open");
+    document.body.classList.remove("map-open", "simple-map");
     ui.mapScreen.classList.remove("active");
     ui.homeScreen.classList.add("active");
     cleanupMap();
@@ -317,6 +319,7 @@ function setupEvents() {
     showToast("Toque no local do mapa para criar o ponto.");
   });
 
+  ui.locateBtn?.addEventListener("click", handleLocateButton);
   ui.gpsBtn.addEventListener("click", toggleGpsTracking);
   ui.centerGpsBtn.addEventListener("click", centerOnCurrentGps);
   ui.saveGpsPointBtn.addEventListener("click", createPointFromGps);
@@ -437,7 +440,10 @@ async function openMap(mapId) {
 
     await ensureMapGeoref(currentMap);
 
-    document.body.classList.add("map-open");
+    document.body.classList.add("map-open", "simple-map");
+    forcedRenderQuality = "sharp";
+    ui.qualitySelect.value = "sharp";
+    applyCleanMapUi();
     ui.currentMapName.textContent = currentMap.name;
     ui.homeScreen.classList.remove("active");
     ui.mapScreen.classList.add("active");
@@ -457,6 +463,8 @@ async function openMap(mapId) {
 
     await renderPointsList();
     updateGpsForCurrentMap(false);
+    prepareLocateButtonForMap();
+    applyCleanMapUi();
   } catch (error) {
     console.error(error);
     openNativeMap("O PDF.js falhou neste aparelho. Abri em modo nativo.");
@@ -526,33 +534,11 @@ async function renderCurrentPage(options = {}) {
     const displayScale = Math.min(1, Math.max(0.05, fitScale));
     const displayViewport = page.getViewport({ scale: displayScale });
 
-    const quality = ui.qualitySelect.value || "hd";
-    const isMobile = window.matchMedia("(max-width: 720px)").matches;
-    const dpr = Math.min(window.devicePixelRatio || 1, isMobile ? 2.0 : 2.2);
-
-    const baseFactor = quality === "ultra" ? 2.2 : quality === "hd" ? 1.6 : 1.1;
-    const zoomFactor = forceQuality ? Math.min(Math.max(1, zoom), quality === "ultra" ? 3.0 : 2.2) : 1;
-    const maxPixels = getMaxPixels(quality, isMobile);
-
-    let renderScale = displayScale * dpr * baseFactor * zoomFactor;
-    let renderViewport = page.getViewport({ scale: renderScale });
-
-    while (renderViewport.width * renderViewport.height > maxPixels && renderScale > displayScale) {
-      renderScale *= 0.84;
-      renderViewport = page.getViewport({ scale: renderScale });
-    }
-
     currentPdfViewport = displayViewport;
     displaySize = {
       width: displayViewport.width,
       height: displayViewport.height,
     };
-    renderQualityZoom = Math.max(1, zoom);
-
-    ui.canvas.width = Math.max(1, Math.floor(renderViewport.width));
-    ui.canvas.height = Math.max(1, Math.floor(renderViewport.height));
-    ui.canvas.style.width = `${Math.floor(displayViewport.width)}px`;
-    ui.canvas.style.height = `${Math.floor(displayViewport.height)}px`;
 
     ui.mapStage.style.width = `${Math.floor(displayViewport.width)}px`;
     ui.mapStage.style.height = `${Math.floor(displayViewport.height)}px`;
@@ -560,17 +546,19 @@ async function renderCurrentPage(options = {}) {
     ui.pointsLayer.style.height = `${Math.floor(displayViewport.height)}px`;
     ui.gpsLayer.style.width = `${Math.floor(displayViewport.width)}px`;
     ui.gpsLayer.style.height = `${Math.floor(displayViewport.height)}px`;
+    if (ui.svgLayer) {
+      ui.svgLayer.style.width = `${Math.floor(displayViewport.width)}px`;
+      ui.svgLayer.style.height = `${Math.floor(displayViewport.height)}px`;
+    }
 
-    ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = "high";
-    ctx.fillStyle = "#fff";
-    ctx.fillRect(0, 0, ui.canvas.width, ui.canvas.height);
+    const usedSvg = await tryRenderSvgPage(page, displayViewport);
 
-    renderTask = page.render({ canvasContext: ctx, viewport: renderViewport });
-    await renderTask.promise;
-    renderTask = null;
+    if (!usedSvg) {
+      await renderCanvasPage(page, displayViewport, forceQuality);
+    }
 
-    ui.pageInfo.textContent = `Página ${pageNum} de ${pdfDoc.numPages} • ${quality.toUpperCase()}`;
+    pageRenderMode = usedSvg ? "svg" : "canvas";
+    ui.pageInfo.textContent = `Página ${pageNum} de ${pdfDoc.numPages} • ${usedSvg ? "SVG" : "CANVAS"}`;
     ui.prevPageBtn.disabled = pageNum <= 1;
     ui.nextPageBtn.disabled = pageNum >= pdfDoc.numPages;
 
@@ -579,13 +567,29 @@ async function renderCurrentPage(options = {}) {
 
     await renderMapPoints();
     updateGpsForCurrentMap(false);
+    applyCleanMapUi();
   } catch (error) {
     if (error?.name !== "RenderingCancelledException") {
       console.error(error);
 
-      if (ui.qualitySelect.value !== "light") {
+      if (pageRenderMode !== "canvas") {
+        pageRenderMode = "canvas";
+        showToast("SVG falhou. Tentando canvas.");
+        await renderCurrentPage({ fitView: true, forceQuality: false });
+      } else if (forcedRenderQuality === "sharp") {
+        forcedRenderQuality = "ultra";
+        ui.qualitySelect.value = "ultra";
+        showToast("Ajustei a qualidade automaticamente.");
+        await renderCurrentPage({ fitView: true, forceQuality: false });
+      } else if (forcedRenderQuality === "ultra") {
+        forcedRenderQuality = "hd";
+        ui.qualitySelect.value = "hd";
+        showToast("Ajustei a qualidade automaticamente.");
+        await renderCurrentPage({ fitView: true, forceQuality: false });
+      } else if (forcedRenderQuality === "hd") {
+        forcedRenderQuality = "light";
         ui.qualitySelect.value = "light";
-        showToast("Celular não aguentou HD. Mudei para Leve.");
+        showToast("Ajustei a qualidade automaticamente.");
         await renderCurrentPage({ fitView: true, forceQuality: false });
       } else {
         openNativeMap("O celular não conseguiu renderizar este PDF em canvas.");
@@ -594,6 +598,91 @@ async function renderCurrentPage(options = {}) {
   } finally {
     ui.mapStage.classList.remove("rendering");
   }
+}
+
+async function tryRenderSvgPage(page, displayViewport) {
+  try {
+    if (!ui.svgLayer || !pdfjsLib.SVGGraphics) return false;
+
+    if (renderTask) {
+      try { renderTask.cancel(); } catch {}
+      renderTask = null;
+    }
+
+    ctx.clearRect(0, 0, ui.canvas.width, ui.canvas.height);
+    ui.svgLayer.innerHTML = "";
+
+    const opList = await page.getOperatorList();
+    const svgGfx = new pdfjsLib.SVGGraphics(page.commonObjs, page.objs);
+    svgGfx.embedFonts = true;
+
+    const svg = await svgGfx.getSVG(opList, displayViewport);
+    svg.setAttribute("width", `${Math.floor(displayViewport.width)}px`);
+    svg.setAttribute("height", `${Math.floor(displayViewport.height)}px`);
+    svg.style.width = `${Math.floor(displayViewport.width)}px`;
+    svg.style.height = `${Math.floor(displayViewport.height)}px`;
+
+    ui.svgLayer.appendChild(svg);
+    ui.mapStage.classList.remove("canvas-mode");
+    ui.mapStage.classList.add("svg-mode");
+    return true;
+  } catch (error) {
+    console.warn("SVG falhou:", error);
+    if (ui.svgLayer) ui.svgLayer.innerHTML = "";
+    ui.mapStage.classList.remove("svg-mode");
+    return false;
+  }
+}
+
+async function renderCanvasPage(page, displayViewport, forceQuality = false) {
+  if (ui.svgLayer) ui.svgLayer.innerHTML = "";
+  ui.mapStage.classList.remove("svg-mode");
+  ui.mapStage.classList.add("canvas-mode");
+
+  const quality = forcedRenderQuality || "sharp";
+  ui.qualitySelect.value = quality;
+
+  const isMobile = window.matchMedia("(max-width: 720px)").matches;
+  const dpr = Math.min(window.devicePixelRatio || 1, isMobile ? 2.0 : 2.2);
+
+  const baseFactor =
+    quality === "sharp" ? 3.15 :
+    quality === "ultra" ? 2.45 :
+    quality === "hd" ? 1.75 : 1.15;
+
+  const maxZoomQuality =
+    quality === "sharp" ? 4.2 :
+    quality === "ultra" ? 3.2 :
+    quality === "hd" ? 2.4 : 1.6;
+
+  const zoomFactor = forceQuality ? Math.min(Math.max(1, zoom), maxZoomQuality) : 1;
+  const maxPixels = getMaxPixels(quality, isMobile);
+  const natural = page.getViewport({ scale: 1 });
+  const displayScale = displayViewport.width / Math.max(1, natural.width);
+
+  let renderScale = displayScale * dpr * baseFactor * zoomFactor;
+  let renderViewport = page.getViewport({ scale: renderScale });
+
+  while (renderViewport.width * renderViewport.height > maxPixels && renderScale > displayScale) {
+    renderScale *= 0.84;
+    renderViewport = page.getViewport({ scale: renderScale });
+  }
+
+  renderQualityZoom = Math.max(1, zoom);
+
+  ui.canvas.width = Math.max(1, Math.floor(renderViewport.width));
+  ui.canvas.height = Math.max(1, Math.floor(renderViewport.height));
+  ui.canvas.style.width = `${Math.floor(displayViewport.width)}px`;
+  ui.canvas.style.height = `${Math.floor(displayViewport.height)}px`;
+
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
+  ctx.fillStyle = "#fff";
+  ctx.fillRect(0, 0, ui.canvas.width, ui.canvas.height);
+
+  renderTask = page.render({ canvasContext: ctx, viewport: renderViewport });
+  await renderTask.promise;
+  renderTask = null;
 }
 
 function getMaxPixels(quality, isMobile) {
@@ -635,6 +724,8 @@ function cleanupMap() {
   ui.mapWrapper.classList.remove("native-mode");
   ui.nativePdfFrame.src = "about:blank";
   ctx.clearRect(0, 0, ui.canvas.width, ui.canvas.height);
+  if (ui.svgLayer) ui.svgLayer.innerHTML = "";
+  ui.mapStage.classList.remove("svg-mode", "canvas-mode");
   ui.pointsLayer.innerHTML = "";
   ui.gpsLayer.innerHTML = "";
   ui.pointsList.innerHTML = "";
@@ -1245,8 +1336,7 @@ function stopGpsTracking() {
   ui.gpsLayer.innerHTML = "";
   updateGpsUi("stopped", "GPS desligado.");
   ui.gpsBtn.textContent = "Ativar GPS";
-  ui.centerGpsBtn.disabled = true;
-  ui.saveGpsPointBtn.disabled = true;
+  setGpsActionButtons(false);
 }
 
 function handleGpsSuccess(position) {
@@ -1314,8 +1404,7 @@ function updateGpsForCurrentMap(allowAutoCenter = false) {
   currentGpsCanvas = location;
   renderGpsMarker(location);
   updateGpsUi("inside", `<strong>Dentro do mapa</strong> • ${formatLatLon(currentGps.lat, currentGps.lon)} • precisão ±${Math.round(currentGps.accuracy || 0)} m`);
-  ui.centerGpsBtn.disabled = false;
-  ui.saveGpsPointBtn.disabled = false;
+  setGpsActionButtons(true);
 
   if (allowAutoCenter && !gpsAutoCentered) {
     gpsAutoCentered = true;
@@ -1425,6 +1514,102 @@ function createPointFromGps() {
   ui.pointNote.value = `GPS: ${formatLatLon(currentGps.lat, currentGps.lon)} • precisão ±${Math.round(currentGps.accuracy || 0)} m`;
 }
 
+
+function updateLocateButton(state = "", text = "Localizar") {
+  if (!ui.locateBtn) return;
+  ui.locateBtn.classList.remove("active", "locating", "outside");
+  if (state) ui.locateBtn.classList.add(state);
+  ui.locateBtn.textContent = text;
+}
+
+function prepareLocateButtonForMap() {
+  if (!currentMap) {
+    updateLocateButton("", "Localizar");
+    return;
+  }
+
+  if (!currentMap.georef?.views?.length) {
+    updateLocateButton("outside", "Sem GeoPDF");
+    return;
+  }
+
+  updateLocateButton("", "Localizar");
+}
+
+function requestGpsOnceForLocate() {
+  return new Promise((resolve, reject) => {
+    if (!("geolocation" in navigator)) {
+      reject(new Error("Este navegador não tem suporte a GPS."));
+      return;
+    }
+
+    if (!window.isSecureContext) {
+      reject(new Error("GPS precisa de HTTPS. Use GitHub Pages no celular."));
+      return;
+    }
+
+    const options = { enableHighAccuracy: true, maximumAge: 0, timeout: 30000 };
+    navigator.geolocation.getCurrentPosition(resolve, reject, options);
+  });
+}
+
+async function handleLocateButton() {
+  if (!currentMap) return;
+
+  if (viewerMode === "native") {
+    if (typeof returnToPdfJsMode === "function") {
+      await returnToPdfJsMode();
+    } else {
+      showToast("Modo nativo não permite GPS em cima do mapa.");
+      return;
+    }
+  }
+
+  if (!currentMap.georef?.views?.length) {
+    updateLocateButton("outside", "Sem GeoPDF");
+    showToast("Este PDF não tem georreferenciamento detectado.");
+    return;
+  }
+
+  updateLocateButton("locating", "Localizando");
+  updateGpsUi("waiting", "Buscando localização... toque em Permitir se aparecer.");
+
+  try {
+    const position = await requestGpsOnceForLocate();
+    handleGpsSuccess(position);
+
+    if (gpsWatchId === null) {
+      const options = { enableHighAccuracy: true, maximumAge: 0, timeout: 30000 };
+      gpsWatchId = navigator.geolocation.watchPosition(handleGpsSuccess, handleGpsError, options);
+    }
+
+    await nextFrame();
+
+    if (currentGpsCanvas?.inside) {
+      await centerOnCurrentGps();
+      updateLocateButton("active", "Localizar");
+      showToast("Localizado no mapa.");
+    } else {
+      updateGpsForCurrentMap(false);
+      updateLocateButton("outside", "Fora mapa");
+      showToast("GPS pegou, mas você está fora do perímetro deste mapa.");
+    }
+  } catch (error) {
+    console.warn(error);
+    updateLocateButton("outside", "GPS erro");
+    updateGpsUi("error", error.message || "Não consegui pegar GPS.");
+    showToast(error.message || "Não consegui pegar GPS.");
+  }
+}
+
+function setGpsActionButtons(enabled) {
+  ui.centerGpsBtn.disabled = !enabled;
+  ui.saveGpsPointBtn.disabled = !enabled;
+  if (ui.locateBtn) {
+    ui.locateBtn.classList.toggle("active", enabled);
+  }
+}
+
 function updateGpsUi(state = "stopped", message = "") {
   ui.gpsStatus.classList.remove("active", "inside", "outside", "waiting", "error", "ready");
 
@@ -1443,6 +1628,13 @@ function updateGpsUi(state = "stopped", message = "") {
 
   ui.gpsStatus.querySelector("span:last-child").textContent = labels[state] || "GPS";
   ui.gpsInfo.innerHTML = message || "GPS desligado.";
+
+  if (state === "waiting") updateLocateButton("locating", "Localizando");
+  else if (state === "inside") updateLocateButton("active", "Localizar");
+  else if (state === "outside") updateLocateButton("outside", "Fora mapa");
+  else if (state === "error") updateLocateButton("outside", "GPS erro");
+  else if (state === "active") updateLocateButton("locating", "Localizando");
+  else updateLocateButton("", "Localizar");
 }
 
 function updateConnectionStatus() {
@@ -1502,6 +1694,19 @@ document.addEventListener("touchmove", (event) => {
   if (event.target.closest?.("#mapWrapper")) return;
   event.preventDefault();
 }, { passive: false });
+
+
+function applyCleanMapUi() {
+  document.body.classList.add("simple-map");
+  for (const selector of [".map-controls", ".gps-info", ".viewer-note", ".point-panel"]) {
+    const el = document.querySelector(selector);
+    if (el) {
+      el.hidden = true;
+      el.setAttribute("aria-hidden", "true");
+      el.style.display = "none";
+    }
+  }
+}
 
 function randomId() {
   if (crypto.randomUUID) return crypto.randomUUID();

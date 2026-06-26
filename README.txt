@@ -1,28 +1,28 @@
-# GPF Mapas V2.1 Mapa Limpo Automático
+# GPF Mapas V2.3 GPS Corrigido
 
-O que mudou:
+Correção principal:
 
-- A faixa de botões do mapa foi removida da tela.
-- Ao abrir o mapa, o app já configura tudo automaticamente:
-  - qualidade Nítido;
-  - modo GPS/PDF.js;
-  - tentativa automática de ativar GPS;
-  - zoom e renderização automática.
-- Na tela do mapa fica apenas o botão Localizar.
-- Se aparecer algo para ativar, deve ser só a permissão do navegador: Permitir localização.
-- O botão Localizar serve para centralizar sua posição no mapa.
+- O botão Localizar agora chama diretamente getCurrentPosition() no toque do usuário.
+- Se o navegador pedir permissão, toque em Permitir.
+- Se der erro, aparece uma caixa informando o motivo:
+  - precisa de HTTPS;
+  - permissão negada;
+  - localização desligada no celular;
+  - fora do perímetro do mapa;
+  - PDF sem GeoPDF detectado.
+- Depois que pega uma posição, o app inicia watchPosition para acompanhar.
+- Se estiver dentro do perímetro do GeoPDF, o app mostra o marcador e centraliza no mapa.
 
-## Importante
+## Para GPS funcionar no celular
 
-O navegador pode exigir uma ação do usuário para liberar GPS. Nesse caso, toque em Localizar e depois em Permitir.
+Use o link HTTPS do GitHub Pages.
+Se abrir por IP local tipo http://192.168... o GPS pode ser bloqueado.
 
-## Como testar
+## Teste
 
 1. Suba no GitHub Pages.
-2. Abra no celular.
-3. Aperte Limpar cache na tela inicial.
-4. Feche e abra novamente.
-5. Importe o PDF.
-6. Abra o mapa.
-7. Permita localização.
-8. Use Localizar para centralizar.
+2. No celular, limpe o cache pela tela inicial.
+3. Feche e abra o navegador.
+4. Abra o mapa.
+5. Toque em Localizar.
+6. Toque em Permitir.

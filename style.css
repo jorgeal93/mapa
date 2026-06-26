@@ -1131,3 +1131,101 @@ body.simple-map .map-topbar .danger-button {
     font-size: 14px;
   }
 }
+
+
+/* ===== V2.2 SVG + Localizar ===== */
+
+.svg-layer {
+  display: none;
+  position: absolute;
+  left: 0;
+  top: 0;
+  background: white;
+  overflow: hidden;
+}
+
+.svg-layer svg {
+  display: block;
+  background: white;
+  overflow: visible;
+}
+
+.map-stage.svg-mode #pdfCanvas {
+  display: none !important;
+}
+
+.map-stage.svg-mode .svg-layer {
+  display: block !important;
+}
+
+.map-stage.canvas-mode .svg-layer {
+  display: none !important;
+}
+
+#mapScreen .map-title span::after {
+  content: " • SVG/GPS";
+}
+
+.floating-map-actions.single .locate-button {
+  min-width: 140px;
+}
+
+.floating-map-actions.single .locate-button.locating {
+  background: rgba(255, 209, 102, .96);
+  color: #231900;
+}
+
+.floating-map-actions.single .locate-button.active {
+  background: linear-gradient(135deg, var(--primary), #7ef2aa);
+  color: #031009;
+}
+
+.floating-map-actions.single .locate-button.outside {
+  background: rgba(255, 93, 108, .96);
+  color: #fff;
+}
+
+
+/* ===== V2.3 GPS corrigido ===== */
+
+.gps-debug-box {
+  position: fixed;
+  left: 50%;
+  top: calc(12px + env(safe-area-inset-top));
+  transform: translateX(-50%);
+  z-index: 300;
+  max-width: min(92vw, 540px);
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(7, 20, 12, .94);
+  border: 1px solid rgba(255,255,255,.18);
+  color: #f4fff7;
+  box-shadow: 0 16px 42px rgba(0,0,0,.38);
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.gps-debug-box strong {
+  color: var(--primary);
+}
+
+.gps-debug-box.error strong {
+  color: var(--danger);
+}
+
+.gps-debug-box.waiting strong {
+  color: var(--warning);
+}
+
+.floating-map-actions.single .locate-button {
+  min-width: 148px;
+}
+
+.floating-map-actions.single .locate-button.locating {
+  animation: locatePulse 1.1s infinite;
+}
+
+@keyframes locatePulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(.96); }
+}
