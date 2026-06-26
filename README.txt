@@ -1,37 +1,29 @@
-# GPF Mapas V2.5 Offline GPS
+# GPF Mapas V3.6 — Mobile Responsivo
 
-Objetivo desta versão:
+Melhorias desta versão:
 
-- Mapa + GPS + botão Localizar funcionando também sem internet.
-- O app salva PDF.js no armazenamento interno do navegador.
-- Depois que PDF.js estiver salvo, o app consegue abrir GeoPDF em modo GPS mesmo offline.
-- O GPS do celular pode funcionar sem internet, desde que a localização do aparelho esteja ligada e o site tenha permissão.
+- Layout ajustado para Android e iOS.
+- Usa altura real da tela do celular com visualViewport.
+- Melhor suporte ao Safari/iPhone com safe-area.
+- Botões maiores e mais fáceis de tocar.
+- Tela do mapa ocupa a tela toda.
+- Botão Localizar não fica atrás da barra do navegador.
+- Cards e botões da tela inicial ficam em coluna no celular.
+- Gestos do mapa continuam funcionando: arrastar e pinça para zoom.
+- Botões continuam com ligação dupla da V3.5.
 
-## Como preparar o offline
+## Como testar
 
-1. Abra o app online pelo GitHub Pages.
-2. Abra um mapa uma vez.
-3. Aguarde aparecer/usar o mapa.
-4. O app salva a biblioteca PDF.js no navegador.
-5. Depois pode ficar sem internet e abrir o mapa novamente.
+1. Suba a V3.6 no GitHub Pages.
+2. Abra no PC para conferir os botões.
+3. Abra no celular Android.
+4. Abra no iPhone/Safari se tiver.
+5. Importe o PDF.
+6. Toque em Gerar.
+7. Depois Abrir.
+8. Use Localizar.
 
-## Importante
+## Dica para iOS
 
-Se abrir offline antes de preparar, o app pode cair no modo nativo.
-Modo nativo fica bonito, mas não permite desenhar GPS em cima do mapa.
-
-Para GPS em cima do mapa offline, precisa:
-- app já carregado/preparado online uma vez;
-- PDF.js salvo no navegador;
-- PDF salvo no app;
-- PDF ser GeoPDF;
-- permissão de localização liberada;
-- celular com localização/GPS ligado.
-
-## Botão Localizar
-
-O botão Localizar:
-- pede GPS;
-- mostra erro se o navegador bloquear;
-- mostra se está fora do perímetro;
-- centraliza o marcador se estiver dentro do mapa.
+No iPhone, depois de testar pelo Safari, use "Adicionar à Tela de Início".
+Como PWA instalado, a tela fica maior e mais parecida com app.

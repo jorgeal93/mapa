@@ -1,4 +1,4 @@
-const CACHE_NAME = "gpf-mapas-v2-5-offline-gps";
+const CACHE_NAME = "gpf-mapas-v3-6-mobile-responsivo";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -52,7 +52,6 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // CDN/PDF.js: cache first para funcionar offline depois.
   event.respondWith(
     caches.match(event.request).then((cached) => {
       if (cached) return cached;
