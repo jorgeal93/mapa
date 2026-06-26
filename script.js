@@ -1,11 +1,11 @@
-/* CampoGeo V4.0 com logo integrada
+/* CampoGeo V4.7 Sem botões duplicados
    - Cria imagem/mapa em alta qualidade a partir do PDF
    - Salva offline no IndexedDB
    - GPS por cima do mapa controlado pelo app
    - Botão Localizar fixo
 */
 
-const DB_NAME = "campogeo-v4-5-db";
+const DB_NAME = "campogeo-v4-7-db";
 const DB_VERSION = 1;
 const MAP_STORE = "maps";
 const ASSET_STORE = "assets";
@@ -39,6 +39,9 @@ const ui = {
   resetAllBtn: $("#resetAllBtn"),
   clearCacheBtn: $("#clearCacheBtn"),
   renderQualitySelect: $("#renderQualitySelect"),
+  dockImportBtn: $("#dockImportBtn"),
+  dockRefreshBtn: $("#dockRefreshBtn"),
+  dockCacheBtn: $("#dockCacheBtn"),
   mapList: $("#mapList"),
   emptyState: $("#emptyState"),
 
@@ -128,7 +131,6 @@ function updateAppHeight() {
 document.addEventListener("DOMContentLoaded", () => {
   updateAppHeight();
   hideProgress();
-  bindAllButtonsSafely();
   init();
 });
 
@@ -168,7 +170,7 @@ function cleanupOldV3Databases() {
 }
 
 function setupEvents() {
-  bindAllButtonsSafely();
+  bindEventsOnce();
 
   window.addEventListener("online", updateConnectionStatus);
   window.addEventListener("offline", updateConnectionStatus);
@@ -178,133 +180,96 @@ function setupEvents() {
   });
 }
 
-function bindAllButtonsSafely() {
-  // Liga os botões de forma resistente. Se algum listener antigo falhar,
-  // o onclick do HTML e a delegação abaixo ainda funcionam.
-  safeBind("pdfInput", "change", handlePdfImport);
-  safeBind("refreshMapsBtn", "click", () => {
-    flashButton("refreshMapsBtn");
-    renderMapList();
-    showToast("Atualizado.");
-  });
-  safeBind("resetAllBtn", "click", () => {
-    flashButton("resetAllBtn");
-    resetEverything();
-  });
-  safeBind("clearCacheBtn", "click", () => {
-    flashButton("clearCacheBtn");
-    clearCacheAndReload();
-  });
-  safeBind("backBtn", "click", async () => {
-    document.body.classList.remove("map-open");
-    updateAppHeight();
-    ui.mapScreen.classList.remove("active");
-    ui.homeScreen.classList.add("active");
-    cleanupCurrentMap();
-    await renderMapList();
-  });
-  safeBind("cancelProgressBtn", "click", cancelCurrentRender);
-  safeBind("locateBtn", "click", () => {
-    flashButton("locateBtn");
-    handleLocateClick();
-  });
-  safeBind("locateBtn", "touchend", (event) => {
-    event.preventDefault();
-    event.stopPropagation();
-    flashButton("locateBtn");
-    handleLocateClick();
-  }, { passive: false });
+function bindEventsOnce() {
+  bindOnce(ui.pdfInput, "change", handlePdfImport);
 
-  // Gestos do mapa.
-  const wrapper = document.getElementById("mapWrapper");
-  if (wrapper && !wrapper.dataset.gpfGesturesBound) {
-    wrapper.dataset.gpfGesturesBound = "1";
-    wrapper.addEventListener("touchstart", handleTouchStart, { passive: false });
-    wrapper.addEventListener("touchmove", handleTouchMove, { passive: false });
-    wrapper.addEventListener("touchend", handleTouchEnd, { passive: false });
-    wrapper.addEventListener("touchcancel", handleTouchEnd, { passive: false });
-    wrapper.addEventListener("pointerdown", handlePointerDown);
-    wrapper.addEventListener("pointermove", handlePointerMove);
-    wrapper.addEventListener("pointerup", handlePointerUp);
-    wrapper.addEventListener("pointercancel", handlePointerUp);
-    wrapper.addEventListener("wheel", (event) => {
-      event.preventDefault();
-      setZoom(zoom + (event.deltaY < 0 ? 0.22 : -0.22), event.clientX, event.clientY);
-    }, { passive: false });
-  }
+  bindOnce(ui.refreshMapsBtn, "click", actionRefreshMaps);
+  bindOnce(ui.resetAllBtn, "click", actionResetEverything);
+  bindOnce(ui.clearCacheBtn, "click", actionClearCache);
 
-  // Delegação de emergência para botões criados dinamicamente.
-  if (!document.body.dataset.gpfDelegated) {
-    document.body.dataset.gpfDelegated = "1";
-    document.addEventListener("click", handleGlobalButtonClick, true);
-  }
+  bindOnce(ui.dockImportBtn, "click", actionOpenImporter);
+  bindOnce(ui.dockRefreshBtn, "click", actionRefreshMaps);
+  bindOnce(ui.dockCacheBtn, "click", actionClearCache);
 
-  window.gpfApp = {
-    refresh: () => {
-      flashButton("refreshMapsBtn");
-      renderMapList();
-      showToast("Atualizado.");
-    },
-    reset: () => {
-      flashButton("resetAllBtn");
-      resetEverything();
-    },
-    clearCache: () => {
-      flashButton("clearCacheBtn");
-      clearCacheAndReload();
-    },
-    locate: () => {
-      flashButton("locateBtn");
-      handleLocateClick();
-    },
+  bindOnce(ui.backBtn, "click", actionBackHome);
+  bindOnce(ui.cancelProgressBtn, "click", cancelCurrentRender);
+  bindOnce(ui.locateBtn, "click", actionLocate);
+
+  bindMapGesturesOnce();
+
+  // Mantém acesso manual pelo console, sem depender de onclick no HTML.
+  window.CampoGeo = {
+    refresh: actionRefreshMaps,
+    reset: actionResetEverything,
+    clearCache: actionClearCache,
+    locate: actionLocate,
+    importPdf: actionOpenImporter,
   };
 }
 
-function safeBind(id, eventName, handler, options) {
-  const el = document.getElementById(id);
-  if (!el) return;
-
-  const key = `gpf_${eventName}_bound`;
-  if (el.dataset[key]) return;
-  el.dataset[key] = "1";
-
-  el.addEventListener(eventName, handler, options || false);
+function bindOnce(element, eventName, handler, options = false) {
+  if (!element) return;
+  const key = `bound_${eventName}`;
+  if (element.dataset[key] === "1") return;
+  element.dataset[key] = "1";
+  element.addEventListener(eventName, handler, options);
 }
 
-function handleGlobalButtonClick(event) {
-  const target = event.target.closest?.("button");
-  if (!target) return;
+function bindMapGesturesOnce() {
+  const wrapper = ui.mapWrapper;
+  if (!wrapper || wrapper.dataset.gesturesBound === "1") return;
 
-  const id = target.id || "";
+  wrapper.dataset.gesturesBound = "1";
+  wrapper.addEventListener("touchstart", handleTouchStart, { passive: false });
+  wrapper.addEventListener("touchmove", handleTouchMove, { passive: false });
+  wrapper.addEventListener("touchend", handleTouchEnd, { passive: false });
+  wrapper.addEventListener("touchcancel", handleTouchEnd, { passive: false });
+  wrapper.addEventListener("pointerdown", handlePointerDown);
+  wrapper.addEventListener("pointermove", handlePointerMove);
+  wrapper.addEventListener("pointerup", handlePointerUp);
+  wrapper.addEventListener("pointercancel", handlePointerUp);
+  wrapper.addEventListener("wheel", handleMapWheel, { passive: false });
+}
 
-  if (id === "refreshMapsBtn") {
-    event.preventDefault();
-    flashButton(id);
-    renderMapList();
-    showToast("Atualizado.");
-    return;
-  }
+function handleMapWheel(event) {
+  event.preventDefault();
+  setZoom(zoom + (event.deltaY < 0 ? 0.22 : -0.22), event.clientX, event.clientY);
+}
 
-  if (id === "resetAllBtn") {
-    event.preventDefault();
-    flashButton(id);
-    resetEverything();
-    return;
-  }
+function actionOpenImporter() {
+  ui.pdfInput?.click();
+}
 
-  if (id === "clearCacheBtn") {
-    event.preventDefault();
-    flashButton(id);
-    clearCacheAndReload();
-    return;
-  }
+async function actionRefreshMaps() {
+  flashButton("refreshMapsBtn");
+  flashButton("dockRefreshBtn");
+  await renderMapList();
+  showToast("Atualizado.");
+}
 
-  if (id === "locateBtn") {
-    event.preventDefault();
-    flashButton(id);
-    handleLocateClick();
-    return;
-  }
+function actionClearCache() {
+  flashButton("clearCacheBtn");
+  flashButton("dockCacheBtn");
+  clearCacheAndReload();
+}
+
+function actionResetEverything() {
+  flashButton("resetAllBtn");
+  resetEverything();
+}
+
+async function actionBackHome() {
+  document.body.classList.remove("map-open");
+  updateAppHeight();
+  ui.mapScreen.classList.remove("active");
+  ui.homeScreen.classList.add("active");
+  cleanupCurrentMap();
+  await renderMapList();
+}
+
+function actionLocate() {
+  flashButton("locateBtn");
+  handleLocateClick();
 }
 
 function flashButton(id) {
@@ -312,6 +277,72 @@ function flashButton(id) {
   if (!el) return;
   el.classList.add("clicked");
   setTimeout(() => el.classList.remove("clicked"), 350);
+}
+
+async function resetEverything() {
+  const ok = confirm("Resetar tudo? Isso apaga mapas salvos, cache e versões antigas.");
+  if (!ok) return;
+
+  try {
+    hideProgress();
+
+    if (gpsWatchId !== null && "geolocation" in navigator) {
+      try { navigator.geolocation.clearWatch(gpsWatchId); } catch {}
+      gpsWatchId = null;
+    }
+
+    if ("serviceWorker" in navigator) {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map((reg) => reg.unregister()));
+    }
+
+    if ("caches" in window) {
+      const keys = await caches.keys();
+      await Promise.all(keys.map((key) => caches.delete(key)));
+    }
+
+    const dbs = [
+      "gpf-mapas-db",
+      "gpf-mapas-v3-db",
+      "gpf-mapas-v3-2-db",
+      "gpf-mapas-v3-3-db",
+      "gpf-mapas-v3-4-db",
+      "gpf-mapas-v3-5-db",
+      "gpf-mapas-v3-6-db",
+      "gpf-mapas-v3-7-db",
+      "gpf-mapas-v3-8-db",
+      "gpf-mapas-v3-9-db",
+      "campogeo-v4-db",
+      "campogeo-v4-2-db",
+      "campogeo-v4-3-db",
+      "campogeo-v4-4-db",
+      "campogeo-v4-5-db",
+      "campogeo-v4-6-db",
+      "campogeo-v4-7-db",
+    ];
+
+    await Promise.all(dbs.map(deleteDatabaseSafe));
+
+    alert("Tudo resetado. O app vai recarregar limpo.");
+    location.reload();
+  } catch (error) {
+    console.error(error);
+    alert("Reset feito. Recarregando.");
+    location.reload();
+  }
+}
+
+function deleteDatabaseSafe(name) {
+  return new Promise((resolve) => {
+    try {
+      const request = indexedDB.deleteDatabase(name);
+      request.onsuccess = () => resolve(true);
+      request.onerror = () => resolve(false);
+      request.onblocked = () => resolve(false);
+    } catch {
+      resolve(false);
+    }
+  });
 }
 
 function openDatabase() {

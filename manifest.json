@@ -1,7 +1,7 @@
 {
   "name": "CampoGeo",
   "short_name": "CampoGeo",
-  "description": "CampoGeo - mapas offline com renderização melhorada.",
+  "description": "CampoGeo - mapas offline com botões sem duplicação.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
