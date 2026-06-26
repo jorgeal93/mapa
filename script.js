@@ -1,11 +1,11 @@
-/* GPF Mapas V3.6 Mobile Responsivo
+/* GPF Mapas V3.7 Visual Moderno
    - Cria imagem/mapa em alta qualidade a partir do PDF
    - Salva offline no IndexedDB
    - GPS por cima do mapa controlado pelo app
    - Botão Localizar fixo
 */
 
-const DB_NAME = "gpf-mapas-v3-6-db";
+const DB_NAME = "gpf-mapas-v3-7-db";
 const DB_VERSION = 1;
 const MAP_STORE = "maps";
 const ASSET_STORE = "assets";
@@ -138,7 +138,7 @@ async function init() {
 
 function cleanupOldV3Databases() {
   // Remove bancos antigos para não aparecer PDF antigo.
-  const oldDbs = ["gpf-mapas-v3-db", "gpf-mapas-v3-2-db", "gpf-mapas-v3-3-db", "gpf-mapas-v3-4-db", "gpf-mapas-v3-5-db"];
+  const oldDbs = ["gpf-mapas-v3-db", "gpf-mapas-v3-2-db", "gpf-mapas-v3-3-db", "gpf-mapas-v3-4-db", "gpf-mapas-v3-5-db", "gpf-mapas-v3-6-db"];
   for (const name of oldDbs) {
     try {
       indexedDB.deleteDatabase(name);
@@ -547,8 +547,8 @@ async function renderMapList() {
         ${realBadge}
       </div>
       <div class="card-actions">
-        <button class="primary-button" data-action="open">${map.realMap?.blob ? "Abrir" : "Abrir"}</button>
-        <button class="ghost-button" data-action="prepare">${map.realMap?.blob ? "Gerar novamente" : "Gerar"}</button>
+        <button class="primary-button" data-action="open">Abrir mapa</button>
+        <button class="ghost-button" data-action="prepare">${map.realMap?.blob ? "Regenerar" : "Gerar"}</button>
         <button class="danger-button" data-action="delete">Excluir</button>
       </div>
     `;

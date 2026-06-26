@@ -1,7 +1,7 @@
 {
-  "name": "GPF Mapas V3.6",
+  "name": "GPF Mapas V3.7",
   "short_name": "GPF Mapas",
-  "description": "GPF Mapas V3.6 - layout responsivo para Android e iOS.",
+  "description": "GPF Mapas V3.7 - visual moderno e botões melhor posicionados.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

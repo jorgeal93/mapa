@@ -1008,3 +1008,288 @@ body.map-open .locate-button {
   -webkit-user-select: none;
   user-select: none;
 }
+
+
+/* ===== V3.7 Visual Moderno — botões e posicionamento ===== */
+
+:root {
+  --glass: rgba(255, 255, 255, .10);
+  --glass-strong: rgba(255, 255, 255, .15);
+  --green-soft: rgba(40, 199, 111, .18);
+  --green-border: rgba(40, 199, 111, .42);
+  --red-soft: rgba(255, 93, 108, .15);
+  --red-border: rgba(255, 93, 108, .40);
+}
+
+/* Botão principal de importar */
+.import-button {
+  gap: 10px;
+  min-height: 58px;
+  padding: 0 22px;
+  border-radius: 20px;
+  font-size: 15px;
+  letter-spacing: -.01em;
+  box-shadow:
+    0 16px 38px rgba(40, 199, 111, .28),
+    inset 0 1px 0 rgba(255,255,255,.35);
+}
+
+.btn-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.18);
+  font-weight: 950;
+}
+
+/* Barra superior de ações na biblioteca */
+.top-actions {
+  padding: 6px;
+  border-radius: 20px;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.10);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+}
+
+.toolbar-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 46px;
+  padding: 0 14px;
+  border-radius: 16px;
+  color: var(--text);
+  background: var(--glass);
+  border: 1px solid rgba(255,255,255,.12);
+  font-weight: 850;
+  font-size: 13px;
+  white-space: nowrap;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.09);
+}
+
+.toolbar-button:hover {
+  background: var(--glass-strong);
+}
+
+.toolbar-button.danger-soft {
+  color: #ffe8eb;
+  background: var(--red-soft);
+  border-color: var(--red-border);
+}
+
+.toolbar-button.danger-soft .btn-icon {
+  background: rgba(255, 93, 108, .26);
+}
+
+/* Cards dos mapas mais modernos */
+.map-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 22px;
+  padding: 15px;
+  background:
+    linear-gradient(135deg, rgba(255,255,255,.10), rgba(255,255,255,.055)),
+    rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.13);
+  box-shadow:
+    0 14px 34px rgba(0,0,0,.22),
+    inset 0 1px 0 rgba(255,255,255,.08);
+}
+
+.map-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 5px;
+  background: linear-gradient(180deg, var(--primary), rgba(126,242,170,.18));
+}
+
+.map-card strong {
+  font-size: 16px;
+  letter-spacing: -.02em;
+}
+
+.geo-badge,
+.real-badge {
+  margin-top: 5px;
+}
+
+/* Ações dentro do card */
+.card-actions {
+  align-items: stretch;
+}
+
+.card-actions button {
+  border-radius: 16px;
+  min-height: 46px;
+  font-weight: 900;
+  letter-spacing: -.01em;
+}
+
+.card-actions .primary-button {
+  box-shadow:
+    0 12px 30px rgba(40,199,111,.25),
+    inset 0 1px 0 rgba(255,255,255,.30);
+}
+
+.card-actions .ghost-button {
+  background: var(--green-soft);
+  border-color: var(--green-border);
+  color: #dfffea;
+}
+
+.card-actions .danger-button {
+  background: var(--red-soft);
+  border-color: var(--red-border);
+}
+
+/* Tela do mapa */
+.map-topbar {
+  background:
+    linear-gradient(135deg, rgba(9, 31, 16, .92), rgba(8, 21, 12, .86));
+  border-color: rgba(255,255,255,.10);
+  box-shadow: 0 10px 32px rgba(0,0,0,.30);
+  backdrop-filter: blur(18px);
+}
+
+.icon-button {
+  border-radius: 16px;
+  background: rgba(255,255,255,.12);
+  border-color: rgba(255,255,255,.14);
+}
+
+/* Botão localizar mais moderno, centralizado embaixo */
+.locate-button {
+  right: 50% !important;
+  transform: translateX(50%);
+  bottom: calc(16px + env(safe-area-inset-bottom));
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-width: 166px;
+  min-height: 58px;
+  padding: 0 22px;
+  border-radius: 999px;
+  font-size: 15px;
+  letter-spacing: -.01em;
+  box-shadow:
+    0 18px 46px rgba(0,0,0,.44),
+    0 0 0 1px rgba(255,255,255,.16),
+    inset 0 1px 0 rgba(255,255,255,.36);
+}
+
+.locate-button .locate-dot {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: rgba(3, 16, 9, .14);
+  font-size: 17px;
+}
+
+.locate-button.locating {
+  transform: translateX(50%);
+}
+
+.locate-button:active {
+  transform: translateX(50%) translateY(1px);
+}
+
+/* Botão clicado mantém feedback bonito */
+button.clicked {
+  outline: none;
+  box-shadow:
+    0 0 0 3px rgba(126, 242, 170, .34),
+    0 16px 38px rgba(0,0,0,.32);
+}
+
+/* Mobile: ações com posição melhor */
+@media (max-width: 820px) {
+  .top-actions {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 7px;
+    width: 100%;
+    padding: 6px;
+    border-radius: 18px;
+  }
+
+  .toolbar-button {
+    min-height: 48px;
+    padding: 0 8px;
+    font-size: 12px;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .toolbar-button .btn-icon {
+    width: 22px;
+    height: 22px;
+    font-size: 13px;
+  }
+
+  .import-button {
+    min-height: 58px;
+    justify-content: center;
+  }
+
+  .card-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .card-actions .primary-button {
+    grid-column: 1 / -1;
+    min-height: 52px;
+    font-size: 15px;
+  }
+
+  .card-actions .ghost-button,
+  .card-actions .danger-button {
+    min-height: 48px;
+    font-size: 13px;
+  }
+
+  .map-card {
+    padding: 15px 13px 13px 17px;
+  }
+
+  body.map-open .locate-button {
+    right: 50% !important;
+    transform: translateX(50%);
+    bottom: calc(14px + env(safe-area-inset-bottom));
+    min-width: min(178px, calc(100vw - 28px));
+    min-height: 56px;
+  }
+
+  body.map-open .locate-button.locating,
+  body.map-open .locate-button:active {
+    transform: translateX(50%) translateY(1px);
+  }
+}
+
+@media (max-width: 380px) {
+  .toolbar-button {
+    font-size: 11px;
+  }
+
+  .locate-button {
+    min-width: 150px;
+    min-height: 52px;
+    font-size: 14px;
+  }
+
+  .card-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .card-actions .primary-button {
+    grid-column: auto;
+  }
+}

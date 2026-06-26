@@ -9,7 +9,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="GPF Mapas" />
   <meta name="description" content="GPF Mapas V3 - mapa real offline com GPS." />
-  <title>GPF Mapas V3.6</title>
+  <title>GPF Mapas V3.7</title>
   <link rel="manifest" href="./manifest.json" />
   <link rel="stylesheet" href="./style.css" />
 </head>
@@ -19,7 +19,7 @@
     <div>
       <p class="eyebrow">GPF</p>
       <h1>Mapas</h1>
-      <p class="muted">V3.6 Mobile</p>
+      <p class="muted">V3.7 Visual Moderno</p>
     </div>
 
     <div class="status-stack">
@@ -36,13 +36,13 @@
           <p class="eyebrow">Offline + GPS</p>
           <h2>Mapa nítido, controlado pelo app, com GPS em cima.</h2>
           <p class="muted">
-            Layout responsivo para Android e iOS, com mapa em tela cheia e botões maiores.
+            Visual mais moderno, com botões melhor posicionados e mais fáceis de usar no celular.
           </p>
         </div>
 
         <label class="import-button">
           <input id="pdfInput" type="file" accept="application/pdf" hidden />
-          <span>Importar PDF</span>
+          <span class="btn-icon">＋</span><span>Importar PDF</span>
         </label>
       </div>
 
@@ -53,9 +53,9 @@
             <h3>Mapas salvos</h3>
           </div>
           <div class="top-actions">
-            <button class="ghost-button" id="refreshMapsBtn" type="button" onclick="window.gpfApp?.refresh?.()">Atualizar</button>
-            <button class="ghost-button" id="resetAllBtn" type="button" onclick="window.gpfApp?.reset?.()">Resetar tudo</button>
-            <button class="ghost-button" id="clearCacheBtn" type="button" onclick="window.gpfApp?.clearCache?.()">Limpar cache</button>
+            <button class="toolbar-button" id="refreshMapsBtn" type="button" onclick="window.gpfApp?.refresh?.()"><span class="btn-icon">↻</span><span>Atualizar</span></button>
+            <button class="toolbar-button danger-soft" id="resetAllBtn" type="button" onclick="window.gpfApp?.reset?.()"><span class="btn-icon">⌫</span><span>Resetar</span></button>
+            <button class="toolbar-button" id="clearCacheBtn" type="button" onclick="window.gpfApp?.clearCache?.()"><span class="btn-icon">⚡</span><span>Cache</span></button>
           </div>
         </div>
 
@@ -86,7 +86,7 @@
         </div>
       </div>
 
-      <button class="locate-button" id="locateBtn" type="button" onclick="window.gpfApp?.locate?.()">Localizar</button>
+      <button class="locate-button" id="locateBtn" type="button" onclick="window.gpfApp?.locate?.()"><span class="locate-dot">⌖</span><span>Localizar</span></button>
     </section>
   </main>
 
