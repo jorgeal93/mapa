@@ -5,7 +5,7 @@
    - Botão Localizar fixo
 */
 
-const DB_NAME = "campogeo-v4-db";
+const DB_NAME = "campogeo-v4-3-db";
 const DB_VERSION = 1;
 const MAP_STORE = "maps";
 const ASSET_STORE = "assets";
@@ -63,6 +63,7 @@ const ui = {
   cancelProgressBtn: $("#cancelProgressBtn"),
   gpsDebugBox: $("#gpsDebugBox"),
   toast: $("#toast"),
+  splashScreen: $("#splashScreen"),
 };
 
 const canvasCtx = ui.fallbackCanvas.getContext("2d", { alpha: false });
@@ -99,7 +100,24 @@ let lastLocateTapAt = 0;
 let cancelRenderRequested = false;
 let activeRenderTask = null;
 let explicitGenerateAllowed = false;
+const splashStartedAt = Date.now();
 
+
+function hideSplashScreen() {
+  if (!ui.splashScreen) return;
+  document.body.classList.remove("app-loading");
+  ui.splashScreen.classList.add("hidden");
+  setTimeout(() => ui.splashScreen?.remove(), 420);
+}
+
+async function finishSplash() {
+  const elapsed = Date.now() - splashStartedAt;
+  const minTime = 1400;
+  if (elapsed < minTime) {
+    await new Promise((resolve) => setTimeout(resolve, minTime - elapsed));
+  }
+  hideSplashScreen();
+}
 
 function updateAppHeight() {
   const height = window.visualViewport?.height || window.innerHeight || document.documentElement.clientHeight;
@@ -129,9 +147,11 @@ async function init() {
     await renderMapList();
     cleanupOldV3Databases();
     registerServiceWorker();
+    await finishSplash();
   } catch (error) {
     console.error(error);
     showToast("Erro ao iniciar app.");
+    await finishSplash();
   }
 }
 

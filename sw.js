@@ -1,4 +1,4 @@
-const CACHE_NAME = "campogeo-v4-1-sem-pastas";
+const CACHE_NAME = "campogeo-v4-3-logo-sem-fundo";
 const APP_SHELL = [
   "./",
   "./index.html",

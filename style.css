@@ -1876,3 +1876,162 @@ body.map-open .bottom-dock {
     font-size: 30px;
   }
 }
+
+
+/* ===== CampoGeo V4.2 Splash ===== */
+
+body.app-loading {
+  overflow: hidden;
+}
+
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-logo {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  object-fit: cover;
+  box-shadow: 0 12px 30px rgba(0,0,0,.30), 0 0 0 1px rgba(255,255,255,.12);
+  background: #0a1a10;
+}
+
+.header-brand-copy h1 {
+  margin: 0;
+}
+
+.header-brand-copy .muted {
+  font-size: 13px;
+}
+
+.splash-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background:
+    radial-gradient(circle at 50% 22%, rgba(40,199,111,.20), transparent 28%),
+    linear-gradient(160deg, #051109 0%, #0a1b10 55%, #051109 100%);
+  transition: opacity .35s ease, visibility .35s ease;
+}
+
+.splash-screen.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.splash-card {
+  width: min(100%, 340px);
+  display: grid;
+  justify-items: center;
+  gap: 16px;
+  padding: 26px 22px 22px;
+  border-radius: 28px;
+  background: rgba(255,255,255,.07);
+  border: 1px solid rgba(255,255,255,.10);
+  box-shadow: 0 24px 60px rgba(0,0,0,.36), inset 0 1px 0 rgba(255,255,255,.08);
+  backdrop-filter: blur(16px);
+}
+
+.splash-logo {
+  width: 112px;
+  height: 112px;
+  border-radius: 28px;
+  object-fit: cover;
+  box-shadow: 0 20px 50px rgba(0,0,0,.34), 0 0 0 1px rgba(126,242,170,.22);
+  background: #0b1b10;
+}
+
+.splash-copy {
+  display: grid;
+  gap: 5px;
+  text-align: center;
+}
+
+.splash-copy strong {
+  font-size: 32px;
+  font-weight: 950;
+  letter-spacing: -.05em;
+}
+
+.splash-copy span {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.splash-loader {
+  width: min(100%, 190px);
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.08);
+  overflow: hidden;
+}
+
+.splash-loader span {
+  display: block;
+  height: 100%;
+  width: 42%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--primary), #7ef2aa);
+  animation: splashMove 1.1s ease-in-out infinite;
+}
+
+@keyframes splashMove {
+  0% { transform: translateX(-120%); }
+  100% { transform: translateX(320%); }
+}
+
+@media (max-width: 720px) {
+  .splash-card {
+    width: min(100%, 320px);
+    padding: 22px 18px 18px;
+    border-radius: 24px;
+  }
+
+  .splash-logo {
+    width: 96px;
+    height: 96px;
+    border-radius: 24px;
+  }
+
+  .header-logo {
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
+  }
+}
+
+
+/* ===== CampoGeo V4.3 Logo sem fundo branco ===== */
+
+.header-logo,
+.splash-logo,
+.brand-logo-img {
+  background: transparent !important;
+}
+
+.splash-logo {
+  object-fit: contain !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  width: 126px !important;
+  height: 126px !important;
+}
+
+.header-logo {
+  object-fit: contain !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.splash-card {
+  background:
+    radial-gradient(circle at 50% 18%, rgba(40,199,111,.16), transparent 34%),
+    rgba(255,255,255,.055);
+}

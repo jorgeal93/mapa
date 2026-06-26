@@ -16,12 +16,26 @@
   <link rel="stylesheet" href="./style.css" />
 </head>
 
-<body class="mobile-ready">
+<body class="mobile-ready app-loading">
+  <div class="splash-screen" id="splashScreen">
+    <div class="splash-card">
+      <img class="splash-logo" src="./campogeo-logo.png" alt="CampoGeo" />
+      <div class="splash-copy">
+        <strong>CampoGeo</strong>
+        <span>Mapas offline para campo</span>
+      </div>
+      <div class="splash-loader"><span></span></div>
+    </div>
+  </div>
+
   <header class="app-header">
-    <div>
-      <p class="eyebrow">GPF</p>
-      <h1>Mapas</h1>
-      <p class="muted">V3.9 Native</p>
+    <div class="header-brand">
+      <img class="header-logo" src="./campogeo-logo.png" alt="CampoGeo" />
+      <div class="header-brand-copy">
+        <p class="eyebrow">CAMPOGEO</p>
+        <h1>CampoGeo</h1>
+        <p class="muted">Mapas offline</p>
+      </div>
     </div>
 
     <div class="status-stack">
@@ -53,11 +67,9 @@
     <section class="screen active" id="homeScreen">
       <div class="hero-card">
         <div>
-          <p class="eyebrow">Offline + GPS</p>
-          <h2>Mapa nítido, controlado pelo app, com GPS em cima.</h2>
-          <p class="muted">
-            Visual ainda mais próximo de aplicativo nativo.
-          </p>
+          <p class="eyebrow">OFFLINE • GPS</p>
+          <h2>Mapas prontos para campo</h2>
+          <p class="muted">Abra, importe o mapa e use no campo.</p>
         </div>
 
         <label class="import-button">
