@@ -1,32 +1,26 @@
-# GPF Mapas V1.5 Pinch Ultra HD
+# GPF Mapas V1.6 Touch Fix
 
-Melhorias desta versão:
+Correções:
 
-- Zoom com dois dedos direto em cima do mapa no celular.
-- Arrastar o mapa com um dedo.
-- Renderização mais nítida ao aproximar.
-- O app re-renderiza o PDF em maior resolução depois do zoom.
-- Melhor centralização do PDF ao abrir.
-- Mantém GPS real, GeoPDF, pontos e exportação CSV.
+- O zoom com dois dedos agora fica preso dentro do mapa.
+- O navegador não deve mais aproximar a aba inteira.
+- Adicionado bloqueio de gesturestart/gesturechange para iPhone/Safari.
+- Adicionado touchstart/touchmove com passive:false direto no mapa.
+- Arrastar com um dedo continua funcionando.
+- Pinça com dois dedos aproxima/afasta o mapa.
+- Mantém PDF.js, GPS, GeoPDF, pontos e CSV.
 
-## Por que antes ficava feio?
+## Sobre nitidez
 
-Antes o PDF era renderizado uma vez e o zoom aumentava a mesma imagem.
-Isso deixa o mapa borrado quando aproxima.
+O modo nativo/offline fica mais nítido porque o celular usa o leitor de PDF próprio e redesenha o PDF vetorial.
+No modo PDF.js o app renderiza em canvas. A V1.6 tenta redesenhar em HD depois do zoom, mas PDF muito grande pode exigir alguns segundos.
 
-Agora o zoom continua rápido durante o gesto, e depois o app redesenha o PDF em HD/Ultra HD para melhorar a nitidez.
+Para testar:
 
-## Como testar
-
-1. Suba a pasta no GitHub Pages.
+1. Suba no GitHub Pages.
 2. Abra no celular.
 3. Aperte "Limpar cache".
-4. Feche e abra o app novamente.
+4. Feche e abra novamente.
 5. Importe o PDF.
 6. Abra o mapa.
-7. Use dois dedos diretamente no mapa para aproximar/afastar.
-8. Aguarde meio segundo depois do zoom para o HD ficar mais nítido.
-
-## Observação
-
-Em PDFs muito pesados, a primeira renderização Ultra HD pode demorar alguns segundos.
+7. Use dois dedos diretamente em cima do mapa.

@@ -1066,3 +1066,73 @@ body.map-open {
     font-weight: 800;
   }
 }
+
+
+/* ===== V1.6 Touch Fix ===== */
+
+html,
+body {
+  overscroll-behavior: none;
+  touch-action: manipulation;
+  -webkit-text-size-adjust: 100%;
+}
+
+body.map-open {
+  position: fixed;
+  width: 100%;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+body.map-open .app-shell {
+  height: 100dvh;
+  overflow: hidden;
+}
+
+body.map-open #mapScreen {
+  height: 100dvh;
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: auto auto auto 1fr auto;
+}
+
+.map-wrapper {
+  touch-action: none !important;
+  -ms-touch-action: none !important;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  isolation: isolate;
+}
+
+.map-wrapper * {
+  touch-action: none !important;
+  -ms-touch-action: none !important;
+}
+
+.map-wrapper.touching {
+  cursor: grabbing;
+}
+
+@media (max-width: 720px) {
+  body.map-open #mapScreen {
+    grid-template-rows: auto auto auto 1fr minmax(0, auto);
+  }
+
+  .map-wrapper {
+    height: auto;
+    min-height: 0;
+  }
+
+  .point-panel {
+    max-height: 26dvh;
+    overflow: hidden;
+  }
+
+  .point-panel .section-title {
+    margin-bottom: 8px;
+  }
+
+  .points-list {
+    max-height: 18dvh;
+  }
+}
