@@ -1,11 +1,11 @@
 {
-  "name": "GPF Mapas V1.7",
+  "name": "GPF Mapas V1.8",
   "short_name": "GPF Mapas",
-  "description": "GPF Mapas V1.7 - correção para mapa aparecer no celular, zoom de dois dedos e render HD.",
+  "description": "App separado para PDF/GeoPDF com GPS e zoom no celular.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#07140c",
+  "background_color": "#06120a",
   "theme_color": "#174f2a",
   "orientation": "any",
   "icons": [

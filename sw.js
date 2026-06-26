@@ -1,4 +1,4 @@
-const CACHE_NAME = "gpf-mapas-v1-7-mapa-corrigido-cache";
+const CACHE_NAME = "gpf-mapas-v1-8-mobile-estavel";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -29,7 +29,6 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
   const isAppFile = url.origin === location.origin;
 
-  // Para arquivos do app, tenta rede primeiro para não ficar preso em versão antiga.
   if (isAppFile) {
     event.respondWith(
       fetch(event.request)
@@ -43,7 +42,6 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Para CDN do PDF.js, cache first.
   event.respondWith(
     caches.match(event.request).then((cached) => {
       if (cached) return cached;

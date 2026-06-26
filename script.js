@@ -1,33 +1,33 @@
-/* GPF Mapas V1.3 GPS corrigido
-   - GPS real em GeoPDF
-   - Detecta georreferenciamento GPTS/LPTS no PDF
-   - Mostra localização se estiver dentro do perímetro do mapa
-   - Tenta PDF.js local e, se faltar, tenta CDN quando online
-   - Salva PDFs e pontos em IndexedDB
+/* GPF Mapas V1.8 Mobile Estável
+   Refeito para celular:
+   - PDF.js com fallback nativo
+   - Canvas com limite seguro para não sumir no iPhone/Android
+   - Zoom com dois dedos dentro do mapa
+   - GPS em GeoPDF quando detectado
 */
 
 const DB_NAME = "gpf-mapas-db";
 const DB_VERSION = 1;
 const MAP_STORE = "maps";
 const POINT_STORE = "points";
-const LOCAL_PDF_JS = "./libs/pdf.min.js";
-const LOCAL_PDF_WORKER = "./libs/pdf.worker.min.js";
-const CDN_PDF_OPTIONS = [
+
+const PDF_SOURCES = [
   {
-    label: "PDF.js online",
+    label: "PDF.js local",
+    script: "./libs/pdf.min.js",
+    worker: "./libs/pdf.worker.min.js",
+    local: true,
+  },
+  {
+    label: "PDF.js cdnjs",
     script: "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js",
-    worker: "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"
+    worker: "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js",
   },
   {
     label: "PDF.js jsDelivr",
     script: "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js",
-    worker: "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js"
+    worker: "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js",
   },
-  {
-    label: "PDF.js unpkg",
-    script: "https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.min.js",
-    worker: "https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js"
-  }
 ];
 
 const $ = (selector) => document.querySelector(selector);
@@ -37,14 +37,13 @@ const ui = {
   mapScreen: $("#mapScreen"),
   pdfInput: $("#pdfInput"),
   refreshMapsBtn: $("#refreshMapsBtn"),
-  updateAppBtn: $("#updateAppBtn"),
+  clearCacheBtn: $("#clearCacheBtn"),
   mapList: $("#mapList"),
   emptyState: $("#emptyState"),
   connectionStatus: $("#connectionStatus"),
   pdfStatus: $("#pdfStatus"),
   gpsStatus: $("#gpsStatus"),
   toast: $("#toast"),
-  viewerNote: $("#viewerNote"),
 
   currentMapName: $("#currentMapName"),
   pageInfo: $("#pageInfo"),
@@ -56,11 +55,13 @@ const ui = {
   zoomInBtn: $("#zoomInBtn"),
   zoomLabel: $("#zoomLabel"),
   resetViewBtn: $("#resetViewBtn"),
+  qualitySelect: $("#qualitySelect"),
   newPointBtn: $("#newPointBtn"),
   gpsBtn: $("#gpsBtn"),
   centerGpsBtn: $("#centerGpsBtn"),
   saveGpsPointBtn: $("#saveGpsPointBtn"),
   gpsInfo: $("#gpsInfo"),
+  viewerNote: $("#viewerNote"),
   exportPointsBtn: $("#exportPointsBtn"),
 
   mapWrapper: $("#mapWrapper"),
@@ -69,7 +70,6 @@ const ui = {
   pointsLayer: $("#pointsLayer"),
   gpsLayer: $("#gpsLayer"),
   nativePdfFrame: $("#nativePdfFrame"),
-  nativePointsLayer: $("#nativePointsLayer"),
 
   pointModal: $("#pointModal"),
   pointForm: $("#pointForm"),
@@ -83,26 +83,41 @@ const ui = {
 const ctx = ui.canvas.getContext("2d", { alpha: false });
 
 let db = null;
+let pdfJsReady = false;
+let pdfSourceLabel = "Nativo";
+
 let currentMap = null;
 let pdfDoc = null;
 let pageNum = 1;
 let renderTask = null;
-let pdfJsReady = false;
-let viewerMode = "native";
+let viewerMode = "none";
 let nativeUrl = null;
+
 let currentPdfViewport = null;
+let displaySize = { width: 0, height: 0 };
+let renderQualityZoom = 1;
+let renderTimer = null;
+
+let zoom = 1;
+let translate = { x: 0, y: 0 };
+let isDragging = false;
+let dragStart = { x: 0, y: 0 };
+let translateStart = { x: 0, y: 0 };
+let pendingPoint = null;
+
+let touchActive = false;
+let touchMode = "none";
+let touchStartPoint = { x: 0, y: 0 };
+let touchLastPoint = { x: 0, y: 0 };
+let touchStartTranslate = { x: 0, y: 0 };
+let touchStartDistance = 0;
+let touchStartZoom = 1;
+let touchMoved = false;
 
 let gpsWatchId = null;
 let currentGps = null;
 let currentGpsCanvas = null;
 let gpsAutoCentered = false;
-
-let zoom = 1;
-let translate = { x: 20, y: 20 };
-let isDragging = false;
-let dragStart = { x: 0, y: 0 };
-let translateStart = { x: 0, y: 0 };
-let pendingPoint = null;
 
 init();
 
@@ -111,8 +126,8 @@ async function init() {
     db = await openDatabase();
     setupEvents();
     updateConnectionStatus();
-    await loadLocalPdfJs();
-    updateGpsUi("stopped");
+    updateGpsUi("stopped", "GPS desligado.");
+    await loadPdfJs();
     await renderMapList();
     registerServiceWorker();
   } catch (error) {
@@ -121,50 +136,46 @@ async function init() {
   }
 }
 
-async function loadLocalPdfJs() {
+async function loadPdfJs() {
   if (window.pdfjsLib) {
-    preparePdfJs(LOCAL_PDF_WORKER, "PDF.js pronto");
+    preparePdfJs(PDF_SOURCES[0]);
     return true;
   }
 
-  // 1) Tenta biblioteca local em ./libs/
-  try {
-    await loadScriptOnce(LOCAL_PDF_JS);
-    if (window.pdfjsLib) {
-      preparePdfJs(LOCAL_PDF_WORKER, "PDF.js local");
-      return true;
-    }
-  } catch {
-    // Continua para opções online
-  }
-
-  // 2) Tenta CDNs diferentes. Isso ajuda no celular quando um CDN falha.
-  if (navigator.onLine) {
-    for (const option of CDN_PDF_OPTIONS) {
+  for (const source of PDF_SOURCES) {
+    if (source.local) {
       try {
-        await loadScriptOnce(option.script);
+        await loadScript(source.script);
         if (window.pdfjsLib) {
-          preparePdfJs(option.worker, option.label);
+          preparePdfJs(source);
           return true;
         }
-      } catch {
-        // Tenta o próximo CDN
-      }
+      } catch {}
+      continue;
     }
+
+    if (!navigator.onLine) continue;
+
+    try {
+      await loadScript(source.script);
+      if (window.pdfjsLib) {
+        preparePdfJs(source);
+        return true;
+      }
+    } catch {}
   }
 
-  markPdfJsMissing();
+  pdfJsReady = false;
+  pdfSourceLabel = "Nativo";
+  ui.pdfStatus.classList.remove("ready");
+  ui.pdfStatus.querySelector("span:last-child").textContent = "Nativo";
   return false;
 }
 
-function loadScriptOnce(src) {
+function loadScript(src) {
   return new Promise((resolve, reject) => {
-    const existing = [...document.scripts].find((script) => script.src === src);
-    if (existing) {
+    if ([...document.scripts].some((script) => script.src.endsWith(src) || script.src === src)) {
       if (window.pdfjsLib) return resolve(true);
-      existing.addEventListener("load", () => resolve(true), { once: true });
-      existing.addEventListener("error", () => reject(new Error(`Não carregou ${src}`)), { once: true });
-      return;
     }
 
     const script = document.createElement("script");
@@ -174,29 +185,23 @@ function loadScriptOnce(src) {
     script.onload = () => resolve(true);
     script.onerror = () => {
       script.remove();
-      reject(new Error(`Não carregou ${src}`));
+      reject(new Error(`Falha ao carregar ${src}`));
     };
     document.head.appendChild(script);
   });
 }
 
-function preparePdfJs(workerSrc = LOCAL_PDF_WORKER, label = "PDF.js local") {
+function preparePdfJs(source) {
   pdfJsReady = true;
-  pdfjsLib.GlobalWorkerOptions.workerSrc = workerSrc;
+  pdfSourceLabel = source.label;
+  pdfjsLib.GlobalWorkerOptions.workerSrc = source.worker;
   ui.pdfStatus.classList.add("ready");
-  ui.pdfStatus.querySelector("span:last-child").textContent = label;
-}
-
-function markPdfJsMissing() {
-  pdfJsReady = false;
-  ui.pdfStatus.classList.remove("ready");
-  ui.pdfStatus.querySelector("span:last-child").textContent = "Nativo";
+  ui.pdfStatus.querySelector("span:last-child").textContent = source.label.replace("PDF.js ", "");
 }
 
 function openDatabase() {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, DB_VERSION);
-
     request.onupgradeneeded = () => {
       const database = request.result;
       if (!database.objectStoreNames.contains(MAP_STORE)) {
@@ -207,7 +212,6 @@ function openDatabase() {
         store.createIndex("mapId", "mapId", { unique: false });
       }
     };
-
     request.onsuccess = () => resolve(request.result);
     request.onerror = () => reject(request.error);
   });
@@ -249,11 +253,6 @@ function deleteOne(storeName, key) {
   });
 }
 
-async function deletePointsByMap(mapId) {
-  const points = await getPointsByMap(mapId);
-  await Promise.all(points.map((point) => deleteOne(POINT_STORE, point.id)));
-}
-
 function getPointsByMap(mapId) {
   return new Promise((resolve, reject) => {
     const index = tx(POINT_STORE).index("mapId");
@@ -263,16 +262,22 @@ function getPointsByMap(mapId) {
   });
 }
 
+async function deletePointsByMap(mapId) {
+  const points = await getPointsByMap(mapId);
+  await Promise.all(points.map((point) => deleteOne(POINT_STORE, point.id)));
+}
+
 function setupEvents() {
   ui.pdfInput.addEventListener("change", handlePdfImport);
   ui.refreshMapsBtn.addEventListener("click", renderMapList);
-  ui.updateAppBtn?.addEventListener("click", clearAppCacheAndReload);
+  ui.clearCacheBtn.addEventListener("click", clearCacheAndReload);
 
-  ui.backBtn.addEventListener("click", () => {
+  ui.backBtn.addEventListener("click", async () => {
+    document.body.classList.remove("map-open");
     ui.mapScreen.classList.remove("active");
     ui.homeScreen.classList.add("active");
     cleanupMap();
-    renderMapList();
+    await renderMapList();
   });
 
   ui.deleteCurrentMapBtn.addEventListener("click", async () => {
@@ -288,38 +293,44 @@ function setupEvents() {
   ui.prevPageBtn.addEventListener("click", async () => {
     if (viewerMode !== "pdfjs" || !pdfDoc || pageNum <= 1) return;
     pageNum--;
-    resetView();
-    await renderCurrentPage();
+    await renderCurrentPage({ fitView: true, forceQuality: true });
   });
 
   ui.nextPageBtn.addEventListener("click", async () => {
     if (viewerMode !== "pdfjs" || !pdfDoc || pageNum >= pdfDoc.numPages) return;
     pageNum++;
-    resetView();
-    await renderCurrentPage();
+    await renderCurrentPage({ fitView: true, forceQuality: true });
   });
 
-  ui.zoomOutBtn.addEventListener("click", () => viewerMode === "pdfjs" && setZoom(zoom - 0.15));
-  ui.zoomInBtn.addEventListener("click", () => viewerMode === "pdfjs" && setZoom(zoom + 0.15));
-  ui.resetViewBtn.addEventListener("click", () => viewerMode === "pdfjs" ? resetView() : showToast("Use o zoom nativo do navegador."));
+  ui.zoomOutBtn.addEventListener("click", () => setZoom(zoom - 0.25));
+  ui.zoomInBtn.addEventListener("click", () => setZoom(zoom + 0.25));
+  ui.resetViewBtn.addEventListener("click", () => viewerMode === "pdfjs" ? resetView() : showToast("No modo nativo, use o zoom do celular."));
+  ui.qualitySelect.addEventListener("change", () => viewerMode === "pdfjs" && renderCurrentPage({ fitView: false, forceQuality: true }));
 
   ui.newPointBtn.addEventListener("click", () => {
     if (!currentMap) return;
+    if (viewerMode !== "pdfjs") {
+      showToast("Ponto preso no mapa precisa do modo PDF.js.");
+      return;
+    }
     pendingPoint = { waiting: true };
-    ui.mapWrapper.classList.toggle("placing-native-point", viewerMode === "native");
-    showToast("Toque no local do mapa onde deseja criar o ponto.");
+    showToast("Toque no local do mapa para criar o ponto.");
   });
 
   ui.gpsBtn.addEventListener("click", toggleGpsTracking);
-  ui.centerGpsBtn.addEventListener("click", () => centerOnCurrentGps());
+  ui.centerGpsBtn.addEventListener("click", centerOnCurrentGps);
   ui.saveGpsPointBtn.addEventListener("click", createPointFromGps);
-
   ui.exportPointsBtn.addEventListener("click", exportCurrentPointsCsv);
 
   ui.pointForm.addEventListener("submit", async (event) => {
     event.preventDefault();
     await savePendingPoint();
   });
+
+  ui.mapWrapper.addEventListener("touchstart", handleTouchStart, { passive: false });
+  ui.mapWrapper.addEventListener("touchmove", handleTouchMove, { passive: false });
+  ui.mapWrapper.addEventListener("touchend", handleTouchEnd, { passive: false });
+  ui.mapWrapper.addEventListener("touchcancel", handleTouchEnd, { passive: false });
 
   ui.mapWrapper.addEventListener("pointerdown", handlePointerDown);
   ui.mapWrapper.addEventListener("pointermove", handlePointerMove);
@@ -330,11 +341,14 @@ function setupEvents() {
   ui.mapWrapper.addEventListener("wheel", (event) => {
     if (viewerMode !== "pdfjs") return;
     event.preventDefault();
-    setZoom(zoom + (event.deltaY < 0 ? 0.12 : -0.12));
+    setZoom(zoom + (event.deltaY < 0 ? 0.18 : -0.18), event.clientX, event.clientY);
   }, { passive: false });
 
   window.addEventListener("online", updateConnectionStatus);
   window.addEventListener("offline", updateConnectionStatus);
+  window.addEventListener("resize", () => {
+    if (viewerMode === "pdfjs") renderCurrentPage({ fitView: true, forceQuality: false });
+  });
 }
 
 async function handlePdfImport(event) {
@@ -360,7 +374,7 @@ async function handlePdfImport(event) {
       georef,
     };
     await put(MAP_STORE, map);
-    showToast(georef ? "GeoPDF importado com GPS." : "PDF importado. Sem georreferência detectada.");
+    showToast(georef?.views?.length ? "GeoPDF importado com GPS." : "PDF importado.");
     await renderMapList();
   } catch (error) {
     console.error(error);
@@ -373,21 +387,23 @@ async function handlePdfImport(event) {
 async function renderMapList() {
   const maps = await getAll(MAP_STORE);
   maps.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
   ui.emptyState.style.display = maps.length ? "none" : "grid";
   ui.mapList.innerHTML = "";
 
   for (const map of maps) {
     const points = await getPointsByMap(map.id);
-    const geoBadge = map.georef?.views?.length
+    const badge = map.georef?.views?.length
       ? `<span class="geo-badge">GeoPDF • GPS disponível</span>`
       : `<span class="geo-badge">PDF comum</span>`;
+
     const card = document.createElement("article");
     card.className = "map-card";
     card.innerHTML = `
       <div>
         <strong>${escapeHtml(map.name)}</strong>
         <span>${formatBytes(map.size)} • ${formatDate(map.createdAt)} • ${points.length} ponto(s)</span>
-        ${geoBadge}
+        ${badge}
       </div>
       <div class="card-actions">
         <button class="primary-button" data-action="open">Abrir</button>
@@ -401,9 +417,10 @@ async function renderMapList() {
       if (!ok) return;
       await deletePointsByMap(map.id);
       await deleteOne(MAP_STORE, map.id);
-      showToast("Mapa excluído.");
       await renderMapList();
+      showToast("Mapa excluído.");
     });
+
     ui.mapList.appendChild(card);
   }
 }
@@ -411,6 +428,7 @@ async function renderMapList() {
 async function openMap(mapId) {
   try {
     cleanupMap();
+
     currentMap = await getOne(MAP_STORE, mapId);
     if (!currentMap) {
       showToast("Mapa não encontrado.");
@@ -418,56 +436,61 @@ async function openMap(mapId) {
     }
 
     await ensureMapGeoref(currentMap);
-    gpsAutoCentered = false;
 
+    document.body.classList.add("map-open");
     ui.currentMapName.textContent = currentMap.name;
     ui.homeScreen.classList.remove("active");
     ui.mapScreen.classList.add("active");
 
+    await nextFrame();
+    await nextFrame();
+
+    if (!pdfJsReady) {
+      await loadPdfJs();
+    }
+
     if (pdfJsReady) {
       await openPdfJsMap();
     } else {
-      openNativeMap();
+      openNativeMap("PDF.js não carregou no celular. Abri em modo nativo.");
     }
 
     await renderPointsList();
     updateGpsForCurrentMap(false);
   } catch (error) {
     console.error(error);
-    if (currentMap) openNativeMap();
-    showToast("PDF.js falhou no celular. Abri pelo visualizador nativo.");
+    openNativeMap("O PDF.js falhou neste aparelho. Abri em modo nativo.");
   }
 }
 
 async function openPdfJsMap() {
   viewerMode = "pdfjs";
-  ui.mapWrapper.classList.remove("native-mode", "placing-native-point");
-  ui.viewerNote.textContent = currentMap.georef?.views?.length
-    ? `Modo mapa com GPS: GeoPDF detectado (${currentMap.georef.views.length} área(s)). Ative o GPS para localizar sua posição no perímetro.`
-    : "Modo PDF.js: este PDF não tem georreferenciamento detectado, então o GPS real não pode ser encaixado no mapa.";
+  ui.mapWrapper.classList.remove("native-mode");
+  ui.nativePdfFrame.src = "about:blank";
   setPdfControlsEnabled(true);
 
-  const copy = currentMap.data.slice(0);
-  pdfDoc = await pdfjsLib.getDocument({ data: copy }).promise;
+  ui.viewerNote.innerHTML = currentMap.georef?.views?.length
+    ? `<strong>GeoPDF detectado.</strong> Use dois dedos para zoom. GPS pode aparecer dentro do perímetro.`
+    : `<strong>Modo PDF.js.</strong> Use dois dedos para zoom. Sem georreferência detectada para GPS no mapa.`;
+
+  const data = currentMap.data.slice(0);
+  pdfDoc = await pdfjsLib.getDocument({ data }).promise;
   pageNum = 1;
-  resetView();
-  await renderCurrentPage();
+  await renderCurrentPage({ fitView: true, forceQuality: true });
 }
 
-function openNativeMap() {
+function openNativeMap(message = "Modo nativo.") {
   viewerMode = "native";
   ui.mapWrapper.classList.add("native-mode");
   setPdfControlsEnabled(false);
-  ui.viewerNote.innerHTML = currentMap.georef?.views?.length
-    ? "<strong>Modo nativo:</strong> GeoPDF detectado, mas o GPS não consegue aparecer sobre o mapa neste modo. Para corrigir, abra online uma vez ou coloque pdf.min.js e pdf.worker.min.js na pasta libs."
-    : "<strong>Modo nativo:</strong> o PDF abriu pelo visualizador do celular. Neste modo dá para visualizar, mas o GPS não fica preso no mapa.";
-  ui.pageInfo.textContent = "Visualizador nativo do navegador";
+
+  ui.viewerNote.innerHTML = `<strong>${escapeHtml(message)}</strong> O mapa aparece nítido, mas GPS/pontos presos ao PDF precisam do modo PDF.js.`;
 
   if (nativeUrl) URL.revokeObjectURL(nativeUrl);
   const blob = new Blob([currentMap.data], { type: "application/pdf" });
   nativeUrl = URL.createObjectURL(blob);
   ui.nativePdfFrame.src = nativeUrl;
-  renderNativePoints();
+  ui.pageInfo.textContent = "Visualizador nativo";
 }
 
 function setPdfControlsEnabled(enabled) {
@@ -475,180 +498,394 @@ function setPdfControlsEnabled(enabled) {
   ui.nextPageBtn.disabled = !enabled;
   ui.zoomOutBtn.disabled = !enabled;
   ui.zoomInBtn.disabled = !enabled;
-  ui.resetViewBtn.disabled = false;
+  ui.qualitySelect.disabled = !enabled;
   ui.zoomLabel.textContent = enabled ? `${Math.round(zoom * 100)}%` : "Nativo";
 }
 
-async function renderCurrentPage() {
+async function renderCurrentPage(options = {}) {
   if (!pdfDoc) return;
+
+  const fitView = Boolean(options.fitView);
+  const forceQuality = Boolean(options.forceQuality);
 
   try {
     if (renderTask) {
-      renderTask.cancel();
+      try { renderTask.cancel(); } catch {}
       renderTask = null;
     }
 
+    ui.mapStage.classList.add("rendering");
+
     const page = await pdfDoc.getPage(pageNum);
-    const wrapperWidth = Math.max(ui.mapWrapper.clientWidth - 40, 320);
-    const naturalViewport = page.getViewport({ scale: 1 });
 
-    // Corrigido para celular:
-    // antes forçava scale >= 1, gerando canvas muito grande em mapas A0.
-    // agora renderiza leve, mas mantém coordenada correta para GPS/pontos.
-    const deviceRatio = Math.min(window.devicePixelRatio || 1, 1.6);
-    const fitScale = (wrapperWidth / naturalViewport.width) * deviceRatio;
-    const baseScale = Math.min(1.35, Math.max(0.25, fitScale));
-    const viewport = page.getViewport({ scale: baseScale });
-    currentPdfViewport = viewport;
+    const wrapperWidth = Math.max(ui.mapWrapper.clientWidth - 18, window.innerWidth - 24, 300);
+    const wrapperHeight = Math.max(ui.mapWrapper.clientHeight - 18, 280);
+    const natural = page.getViewport({ scale: 1 });
 
-    ui.canvas.width = Math.floor(viewport.width);
-    ui.canvas.height = Math.floor(viewport.height);
-    ui.canvas.style.width = `${Math.floor(viewport.width)}px`;
-    ui.canvas.style.height = `${Math.floor(viewport.height)}px`;
-    ui.pointsLayer.style.width = `${Math.floor(viewport.width)}px`;
-    ui.pointsLayer.style.height = `${Math.floor(viewport.height)}px`;
+    const fitScale = Math.min(wrapperWidth / natural.width, wrapperHeight / natural.height) * 0.98;
+    const displayScale = Math.min(1, Math.max(0.05, fitScale));
+    const displayViewport = page.getViewport({ scale: displayScale });
 
-    ctx.fillStyle = "white";
+    const quality = ui.qualitySelect.value || "hd";
+    const isMobile = window.matchMedia("(max-width: 720px)").matches;
+    const dpr = Math.min(window.devicePixelRatio || 1, isMobile ? 2.0 : 2.2);
+
+    const baseFactor = quality === "ultra" ? 2.2 : quality === "hd" ? 1.6 : 1.1;
+    const zoomFactor = forceQuality ? Math.min(Math.max(1, zoom), quality === "ultra" ? 3.0 : 2.2) : 1;
+    const maxPixels = getMaxPixels(quality, isMobile);
+
+    let renderScale = displayScale * dpr * baseFactor * zoomFactor;
+    let renderViewport = page.getViewport({ scale: renderScale });
+
+    while (renderViewport.width * renderViewport.height > maxPixels && renderScale > displayScale) {
+      renderScale *= 0.84;
+      renderViewport = page.getViewport({ scale: renderScale });
+    }
+
+    currentPdfViewport = displayViewport;
+    displaySize = {
+      width: displayViewport.width,
+      height: displayViewport.height,
+    };
+    renderQualityZoom = Math.max(1, zoom);
+
+    ui.canvas.width = Math.max(1, Math.floor(renderViewport.width));
+    ui.canvas.height = Math.max(1, Math.floor(renderViewport.height));
+    ui.canvas.style.width = `${Math.floor(displayViewport.width)}px`;
+    ui.canvas.style.height = `${Math.floor(displayViewport.height)}px`;
+
+    ui.mapStage.style.width = `${Math.floor(displayViewport.width)}px`;
+    ui.mapStage.style.height = `${Math.floor(displayViewport.height)}px`;
+    ui.pointsLayer.style.width = `${Math.floor(displayViewport.width)}px`;
+    ui.pointsLayer.style.height = `${Math.floor(displayViewport.height)}px`;
+    ui.gpsLayer.style.width = `${Math.floor(displayViewport.width)}px`;
+    ui.gpsLayer.style.height = `${Math.floor(displayViewport.height)}px`;
+
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
+    ctx.fillStyle = "#fff";
     ctx.fillRect(0, 0, ui.canvas.width, ui.canvas.height);
 
-    renderTask = page.render({ canvasContext: ctx, viewport });
+    renderTask = page.render({ canvasContext: ctx, viewport: renderViewport });
     await renderTask.promise;
     renderTask = null;
 
-    ui.pageInfo.textContent = `Página ${pageNum} de ${pdfDoc.numPages}`;
+    ui.pageInfo.textContent = `Página ${pageNum} de ${pdfDoc.numPages} • ${quality.toUpperCase()}`;
     ui.prevPageBtn.disabled = pageNum <= 1;
     ui.nextPageBtn.disabled = pageNum >= pdfDoc.numPages;
-    applyTransform();
-    await renderPdfJsPoints();
+
+    if (fitView) resetView();
+    else applyTransform();
+
+    await renderMapPoints();
     updateGpsForCurrentMap(false);
   } catch (error) {
     if (error?.name !== "RenderingCancelledException") {
       console.error(error);
-      showToast("Erro ao renderizar página.");
+
+      if (ui.qualitySelect.value !== "light") {
+        ui.qualitySelect.value = "light";
+        showToast("Celular não aguentou HD. Mudei para Leve.");
+        await renderCurrentPage({ fitView: true, forceQuality: false });
+      } else {
+        openNativeMap("O celular não conseguiu renderizar este PDF em canvas.");
+      }
     }
+  } finally {
+    ui.mapStage.classList.remove("rendering");
   }
 }
 
+function getMaxPixels(quality, isMobile) {
+  if (isMobile) {
+    if (quality === "ultra") return 12000000;
+    if (quality === "hd") return 8000000;
+    return 4500000;
+  }
+
+  if (quality === "ultra") return 24000000;
+  if (quality === "hd") return 16000000;
+  return 8000000;
+}
+
 function cleanupMap() {
-  currentMap = null;
-  pdfDoc = null;
-  pageNum = 1;
-  pendingPoint = null;
-  currentPdfViewport = null;
-  currentGpsCanvas = null;
-  gpsAutoCentered = false;
-  viewerMode = "native";
-  ui.mapWrapper.classList.remove("native-mode", "placing-native-point");
-  ui.viewerNote.textContent = "";
+  if (renderTask) {
+    try { renderTask.cancel(); } catch {}
+    renderTask = null;
+  }
 
   if (nativeUrl) {
     URL.revokeObjectURL(nativeUrl);
     nativeUrl = null;
   }
-  ui.nativePdfFrame.removeAttribute("src");
 
-  if (renderTask) {
-    try { renderTask.cancel(); } catch {}
-    renderTask = null;
-  }
+  currentMap = null;
+  pdfDoc = null;
+  pageNum = 1;
+  viewerMode = "none";
+  currentPdfViewport = null;
+  displaySize = { width: 0, height: 0 };
+  pendingPoint = null;
+  currentGpsCanvas = null;
+  gpsAutoCentered = false;
+  zoom = 1;
+  translate = { x: 0, y: 0 };
+  clearTimeout(renderTimer);
+
+  ui.mapWrapper.classList.remove("native-mode");
+  ui.nativePdfFrame.src = "about:blank";
   ctx.clearRect(0, 0, ui.canvas.width, ui.canvas.height);
   ui.pointsLayer.innerHTML = "";
   ui.gpsLayer.innerHTML = "";
-  ui.nativePointsLayer.innerHTML = "";
   ui.pointsList.innerHTML = "";
-  resetView();
 }
 
-function setZoom(value) {
-  zoom = Math.min(3.2, Math.max(0.45, value));
+function setZoom(value, centerClientX = null, centerClientY = null) {
+  if (viewerMode !== "pdfjs") return;
+
+  const oldZoom = zoom;
+  const nextZoom = Math.min(6, Math.max(0.55, value));
+  if (Math.abs(nextZoom - oldZoom) < 0.001) return;
+
+  const rect = ui.mapWrapper.getBoundingClientRect();
+  const centerX = centerClientX ?? rect.left + rect.width / 2;
+  const centerY = centerClientY ?? rect.top + rect.height / 2;
+  const localX = centerX - rect.left;
+  const localY = centerY - rect.top;
+
+  const mapX = (localX - translate.x) / oldZoom;
+  const mapY = (localY - translate.y) / oldZoom;
+
+  zoom = nextZoom;
+  translate = {
+    x: localX - mapX * zoom,
+    y: localY - mapY * zoom,
+  };
+
   ui.zoomLabel.textContent = `${Math.round(zoom * 100)}%`;
   applyTransform();
+  scheduleQualityRender();
+}
+
+function scheduleQualityRender(delay = 450) {
+  if (viewerMode !== "pdfjs" || !pdfDoc) return;
+
+  clearTimeout(renderTimer);
+  renderTimer = setTimeout(() => {
+    if (Math.abs(Math.max(1, zoom) - renderQualityZoom) > 0.45 || zoom > 1.8) {
+      renderCurrentPage({ fitView: false, forceQuality: true });
+    }
+  }, delay);
 }
 
 function resetView() {
   zoom = 1;
-  translate = { x: 20, y: 20 };
-  ui.zoomLabel.textContent = viewerMode === "native" ? "Nativo" : "100%";
+  translate = {
+    x: Math.max(8, (ui.mapWrapper.clientWidth - displaySize.width) / 2),
+    y: Math.max(8, (ui.mapWrapper.clientHeight - displaySize.height) / 2),
+  };
+  ui.zoomLabel.textContent = "100%";
   applyTransform();
 }
 
 function applyTransform() {
-  ui.mapStage.style.transform = `translate(${translate.x}px, ${translate.y}px) scale(${zoom})`;
+  ui.mapStage.style.transform = `translate3d(${translate.x}px, ${translate.y}px, 0) scale(${zoom})`;
   updateGpsMarkerScale();
 }
 
+function handleTouchStart(event) {
+  if (viewerMode !== "pdfjs") return;
+
+  event.preventDefault();
+  event.stopPropagation();
+
+  touchActive = true;
+  const touches = getTouchPoints(event);
+
+  if (touches.length >= 2) {
+    touchMode = "pinch";
+    touchStartDistance = distanceBetween(touches[0], touches[1]);
+    touchStartZoom = zoom;
+    touchMoved = false;
+    return;
+  }
+
+  if (touches.length === 1) {
+    touchMode = "pan";
+    touchStartPoint = touches[0];
+    touchLastPoint = touches[0];
+    touchStartTranslate = { ...translate };
+    touchMoved = false;
+  }
+}
+
+function handleTouchMove(event) {
+  if (viewerMode !== "pdfjs" || !touchActive) return;
+
+  event.preventDefault();
+  event.stopPropagation();
+
+  const touches = getTouchPoints(event);
+
+  if (touches.length >= 2) {
+    const distance = distanceBetween(touches[0], touches[1]);
+    const center = midpoint(touches[0], touches[1]);
+
+    if (!touchStartDistance || touchStartDistance < 8) {
+      touchStartDistance = distance;
+      touchStartZoom = zoom;
+      return;
+    }
+
+    touchMode = "pinch";
+    touchMoved = true;
+    const ratio = distance / touchStartDistance;
+
+    clearTimeout(renderTimer);
+    setZoom(touchStartZoom * ratio, center.x, center.y);
+    clearTimeout(renderTimer);
+    return;
+  }
+
+  if (touches.length === 1 && touchMode === "pan") {
+    const point = touches[0];
+    const dx = point.x - touchStartPoint.x;
+    const dy = point.y - touchStartPoint.y;
+
+    if (Math.hypot(dx, dy) > 4) touchMoved = true;
+
+    translate = {
+      x: touchStartTranslate.x + dx,
+      y: touchStartTranslate.y + dy,
+    };
+
+    touchLastPoint = point;
+    applyTransform();
+  }
+}
+
+function handleTouchEnd(event) {
+  if (viewerMode !== "pdfjs" || !touchActive) return;
+
+  event.preventDefault();
+  event.stopPropagation();
+
+  const touches = getTouchPoints(event);
+
+  if (touches.length >= 1) {
+    if (touches.length === 1) {
+      touchMode = "pan";
+      touchStartPoint = touches[0];
+      touchLastPoint = touches[0];
+      touchStartTranslate = { ...translate };
+    }
+    return;
+  }
+
+  if (touchMode === "pinch" || touchMoved) {
+    scheduleQualityRender(180);
+  }
+
+  if (!touchMoved && touchMode === "pan" && pendingPoint?.waiting) {
+    const position = screenToMap(touchLastPoint.x, touchLastPoint.y);
+    if (position) {
+      pendingPoint = makePointDraft(position.x, position.y, pageNum);
+      openPointModal();
+    }
+  }
+
+  touchActive = false;
+  touchMode = "none";
+  touchMoved = false;
+}
+
+function getTouchPoints(event) {
+  return [...event.touches].map((touch) => ({
+    x: touch.clientX,
+    y: touch.clientY,
+  }));
+}
+
+function distanceBetween(a, b) {
+  return Math.hypot(a.x - b.x, a.y - b.y);
+}
+
+function midpoint(a, b) {
+  return {
+    x: (a.x + b.x) / 2,
+    y: (a.y + b.y) / 2,
+  };
+}
+
 function handlePointerDown(event) {
-  if (viewerMode === "native") return;
+  if (event.pointerType === "touch" || viewerMode !== "pdfjs") return;
+
   ui.mapWrapper.setPointerCapture(event.pointerId);
   isDragging = true;
   dragStart = { x: event.clientX, y: event.clientY };
   translateStart = { ...translate };
-  ui.mapStage.classList.add("dragging");
 }
 
 function handlePointerMove(event) {
-  if (!isDragging || viewerMode !== "pdfjs") return;
+  if (event.pointerType === "touch" || !isDragging || viewerMode !== "pdfjs") return;
+
   translate = {
     x: translateStart.x + event.clientX - dragStart.x,
     y: translateStart.y + event.clientY - dragStart.y,
   };
+
   applyTransform();
 }
 
 function handlePointerUp(event) {
-  if (viewerMode === "native") {
-    if (pendingPoint?.waiting) placeNativePoint(event);
-    return;
-  }
+  if (event.pointerType === "touch" || viewerMode !== "pdfjs") return;
 
-  if (!isDragging) return;
   const moved = Math.hypot(event.clientX - dragStart.x, event.clientY - dragStart.y);
   isDragging = false;
-  ui.mapStage.classList.remove("dragging");
 
   if (pendingPoint?.waiting && moved < 8) {
-    const mapPosition = screenToMap(event.clientX, event.clientY);
-    if (mapPosition) {
-      pendingPoint = { waiting: false, mode: "pdfjs", page: pageNum, x: mapPosition.x, y: mapPosition.y };
+    const position = screenToMap(event.clientX, event.clientY);
+    if (position) {
+      pendingPoint = makePointDraft(position.x, position.y, pageNum);
       openPointModal();
     }
   }
 }
 
 function handleDoubleClick(event) {
-  if (viewerMode === "native") {
-    placeNativePoint(event);
-    return;
-  }
+  if (viewerMode !== "pdfjs") return;
 
-  const mapPosition = screenToMap(event.clientX, event.clientY);
-  if (!mapPosition) return;
-  pendingPoint = { waiting: false, mode: "pdfjs", page: pageNum, x: mapPosition.x, y: mapPosition.y };
+  const position = screenToMap(event.clientX, event.clientY);
+  if (!position) return;
+  pendingPoint = makePointDraft(position.x, position.y, pageNum);
   openPointModal();
 }
 
 function screenToMap(clientX, clientY) {
-  const wrapperRect = ui.mapWrapper.getBoundingClientRect();
-  const localX = clientX - wrapperRect.left;
-  const localY = clientY - wrapperRect.top;
+  const rect = ui.mapWrapper.getBoundingClientRect();
+  const localX = clientX - rect.left;
+  const localY = clientY - rect.top;
+
   const x = (localX - translate.x) / zoom;
   const y = (localY - translate.y) / zoom;
 
-  if (x < 0 || y < 0 || x > ui.canvas.width || y > ui.canvas.height) {
+  if (x < 0 || y < 0 || x > displaySize.width || y > displaySize.height) {
     showToast("Toque dentro do PDF.");
     return null;
   }
+
   return { x, y };
 }
 
-function placeNativePoint(event) {
-  if (!pendingPoint?.waiting || viewerMode !== "native") return;
-  const rect = ui.mapWrapper.getBoundingClientRect();
-  const px = Math.min(100, Math.max(0, ((event.clientX - rect.left) / rect.width) * 100));
-  const py = Math.min(100, Math.max(0, ((event.clientY - rect.top) / rect.height) * 100));
-  pendingPoint = { waiting: false, mode: "native", page: 1, px, py };
-  ui.mapWrapper.classList.remove("placing-native-point");
-  openPointModal();
+function makePointDraft(x, y, page) {
+  return {
+    waiting: false,
+    page,
+    x,
+    y,
+    nx: displaySize.width ? x / displaySize.width : 0,
+    ny: displaySize.height ? y / displaySize.height : 0,
+  };
 }
 
 function openPointModal() {
@@ -675,69 +912,50 @@ async function savePendingPoint() {
     name,
     area: ui.pointArea.value.trim(),
     note: ui.pointNote.value.trim(),
-    coordMode: pendingPoint.mode,
-    page: pendingPoint.page || 1,
-    x: pendingPoint.x ?? null,
-    y: pendingPoint.y ?? null,
-    px: pendingPoint.px ?? null,
-    py: pendingPoint.py ?? null,
-    lat: pendingPoint.lat ?? null,
-    lon: pendingPoint.lon ?? null,
-    accuracy: pendingPoint.accuracy ?? null,
+    page: pendingPoint.page,
+    x: pendingPoint.x,
+    y: pendingPoint.y,
+    nx: pendingPoint.nx,
+    ny: pendingPoint.ny,
+    lat: pendingPoint.lat,
+    lon: pendingPoint.lon,
+    accuracy: pendingPoint.accuracy,
     source: pendingPoint.source || "manual",
     createdAt: new Date().toISOString(),
   };
 
   await put(POINT_STORE, point);
   pendingPoint = null;
-  ui.mapWrapper.classList.remove("placing-native-point");
   ui.pointModal.close();
-  showToast("Ponto salvo.");
-  await renderPdfJsPoints();
-  await renderNativePoints();
+
+  await renderMapPoints();
   await renderPointsList();
+  showToast("Ponto salvo.");
 }
 
-async function renderPdfJsPoints() {
+async function renderMapPoints() {
   ui.pointsLayer.innerHTML = "";
   if (!currentMap || viewerMode !== "pdfjs") return;
 
   const points = await getPointsByMap(currentMap.id);
-  points
-    .filter((point) => point.coordMode === "pdfjs" && point.page === pageNum)
-    .forEach((point) => {
-      const el = document.createElement("button");
-      el.className = "map-point";
-      el.title = point.name;
-      el.style.left = `${point.x}px`;
-      el.style.top = `${point.y}px`;
-      el.innerHTML = "<span></span>";
-      el.addEventListener("click", () => showToast(`${point.name}${point.area ? " • " + point.area : ""}`));
-      ui.pointsLayer.appendChild(el);
-    });
-}
 
-async function renderNativePoints() {
-  ui.nativePointsLayer.innerHTML = "";
-  if (!currentMap || viewerMode !== "native") return;
+  for (const point of points.filter((item) => item.page === pageNum)) {
+    const x = Number.isFinite(point.nx) ? point.nx * displaySize.width : point.x;
+    const y = Number.isFinite(point.ny) ? point.ny * displaySize.height : point.y;
 
-  const points = await getPointsByMap(currentMap.id);
-  points
-    .filter((point) => point.coordMode === "native")
-    .forEach((point) => {
-      const el = document.createElement("button");
-      el.className = "native-map-point";
-      el.title = point.name;
-      el.style.left = `${point.px}%`;
-      el.style.top = `${point.py}%`;
-      el.innerHTML = "<span></span>";
-      el.addEventListener("click", () => showToast(`${point.name}${point.area ? " • " + point.area : ""}`));
-      ui.nativePointsLayer.appendChild(el);
-    });
+    const el = document.createElement("button");
+    el.className = "map-point";
+    el.title = point.name;
+    el.style.left = `${x}px`;
+    el.style.top = `${y}px`;
+    el.addEventListener("click", () => showToast(point.name));
+    ui.pointsLayer.appendChild(el);
+  }
 }
 
 async function renderPointsList() {
   if (!currentMap) return;
+
   const points = await getPointsByMap(currentMap.id);
   points.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
@@ -745,15 +963,18 @@ async function renderPointsList() {
   ui.pointsList.innerHTML = "";
 
   for (const point of points) {
-    const label = point.source === "gps"
-      ? `GPS • Página ${point.page} • ±${Math.round(point.accuracy || 0)} m`
-      : (point.coordMode === "pdfjs" ? `Página ${point.page}` : "Ponto nativo");
     const card = document.createElement("article");
     card.className = "point-card";
     card.innerHTML = `
       <div>
         <strong>${escapeHtml(point.name)}</strong>
-        <span>${label}${point.area ? " • " + escapeHtml(point.area) : ""} • ${formatDate(point.createdAt)}${point.note ? "<br>" + escapeHtml(point.note) : ""}</span>
+        <span>
+          Página ${point.page}
+          ${point.area ? " • " + escapeHtml(point.area) : ""}
+          ${point.lat ? " • GPS" : ""}
+          • ${formatDate(point.createdAt)}
+          ${point.note ? "<br>" + escapeHtml(point.note) : ""}
+        </span>
       </div>
       <div class="card-actions">
         <button class="ghost-button" data-action="go">Ir</button>
@@ -762,22 +983,32 @@ async function renderPointsList() {
     `;
 
     card.querySelector('[data-action="go"]').addEventListener("click", async () => {
-      if (viewerMode === "pdfjs" && point.coordMode === "pdfjs") {
-        pageNum = point.page;
-        await renderCurrentPage();
-        translate = { x: ui.mapWrapper.clientWidth / 2 - point.x * zoom, y: ui.mapWrapper.clientHeight / 2 - point.y * zoom };
-        applyTransform();
-      } else {
-        showToast(point.name);
+      if (viewerMode !== "pdfjs") {
+        showToast("Abrir ponto precisa do modo PDF.js.");
+        return;
       }
+
+      if (pageNum !== point.page) {
+        pageNum = point.page;
+        await renderCurrentPage({ fitView: true, forceQuality: false });
+      }
+
+      const x = Number.isFinite(point.nx) ? point.nx * displaySize.width : point.x;
+      const y = Number.isFinite(point.ny) ? point.ny * displaySize.height : point.y;
+
+      translate = {
+        x: ui.mapWrapper.clientWidth / 2 - x * zoom,
+        y: ui.mapWrapper.clientHeight / 2 - y * zoom,
+      };
+      applyTransform();
+      showToast(point.name);
     });
 
     card.querySelector('[data-action="delete"]').addEventListener("click", async () => {
       await deleteOne(POINT_STORE, point.id);
-      showToast("Ponto excluído.");
-      await renderPdfJsPoints();
-      await renderNativePoints();
+      await renderMapPoints();
       await renderPointsList();
+      showToast("Ponto excluído.");
     });
 
     ui.pointsList.appendChild(card);
@@ -786,6 +1017,7 @@ async function renderPointsList() {
 
 async function exportCurrentPointsCsv() {
   if (!currentMap) return;
+
   const points = await getPointsByMap(currentMap.id);
   if (!points.length) {
     showToast("Nenhum ponto para exportar.");
@@ -793,30 +1025,34 @@ async function exportCurrentPointsCsv() {
   }
 
   const rows = [
-    ["mapa", "nome", "talhao_area", "modo", "pagina", "x", "y", "px", "py", "latitude", "longitude", "precisao_m", "origem", "observacao", "data_hora"],
+    ["mapa", "nome", "area", "pagina", "x", "y", "latitude", "longitude", "precisao", "observacao", "data_hora"],
     ...points.map((point) => [
-      point.mapName, point.name, point.area, point.coordMode, point.page,
-      point.x ?? "", point.y ?? "", point.px ?? "", point.py ?? "",
-      point.lat ?? "", point.lon ?? "", point.accuracy ?? "", point.source || "manual",
-      point.note, point.createdAt,
+      point.mapName,
+      point.name,
+      point.area,
+      point.page,
+      Math.round(Number(point.x || 0) * 100) / 100,
+      Math.round(Number(point.y || 0) * 100) / 100,
+      point.lat || "",
+      point.lon || "",
+      point.accuracy || "",
+      point.note,
+      point.createdAt,
     ]),
   ];
 
   const csv = rows.map((row) => row.map(csvCell).join(";")).join("\n");
   const blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8" });
   const url = URL.createObjectURL(blob);
+
   const link = document.createElement("a");
   link.href = url;
   link.download = `${safeFileName(currentMap.name)}-pontos.csv`;
   link.click();
+
   URL.revokeObjectURL(url);
   showToast("CSV exportado.");
 }
-
-
-/* -----------------------------
-   GPS + GeoPDF
------------------------------- */
 
 async function ensureMapGeoref(map) {
   if (map.georef?.views?.length) return map.georef;
@@ -825,7 +1061,6 @@ async function ensureMapGeoref(map) {
   if (georef?.views?.length) {
     map.georef = georef;
     await put(MAP_STORE, map);
-    showToast("GeoPDF detectado neste mapa.");
     return georef;
   }
 
@@ -839,38 +1074,37 @@ function extractGeoPdfViewports(arrayBuffer) {
     const text = new TextDecoder("iso-8859-1").decode(bytes);
     const views = [];
 
-    const regex = /\/BBox\s*\[([^\]]+)\][\s\S]{0,2200}?\/Name\s*\(([\s\S]*?)\)[\s\S]{0,2200}?\/Measure\s*<<[\s\S]{0,2200}?\/Subtype\s*\/GEO[\s\S]{0,2200}?\/GPTS\s*\[([^\]]+)\][\s\S]{0,2200}?\/LPTS\s*\[([^\]]+)\]/g;
+    const regex = /\/BBox\s*\[([^\]]+)\][\s\S]{0,2600}?\/Name\s*\(([\s\S]*?)\)[\s\S]{0,2600}?\/Measure\s*<<[\s\S]{0,2600}?\/Subtype\s*\/GEO[\s\S]{0,2600}?\/GPTS\s*\[([^\]]+)\][\s\S]{0,2600}?\/LPTS\s*\[([^\]]+)\]/g;
     let match;
 
     while ((match = regex.exec(text)) !== null) {
-      const bbox = parseNumberList(match[1]);
-      const name = cleanPdfName(match[2]);
-      const gpts = parseNumberList(match[3]);
-      const lpts = parseNumberList(match[4]);
-      const view = buildGeoView({ bbox, name, gpts, lpts, page: 1 });
+      const view = buildGeoView({
+        bbox: parseNumberList(match[1]),
+        name: cleanPdfName(match[2]),
+        gpts: parseNumberList(match[3]),
+        lpts: parseNumberList(match[4]),
+        page: 1,
+      });
       if (view) views.push(view);
     }
 
-    // Fallback para PDFs que não trazem /Name perto do /Measure.
     if (!views.length) {
-      const regexNoName = /\/BBox\s*\[([^\]]+)\][\s\S]{0,3200}?\/Measure\s*<<[\s\S]{0,3200}?\/Subtype\s*\/GEO[\s\S]{0,3200}?\/GPTS\s*\[([^\]]+)\][\s\S]{0,3200}?\/LPTS\s*\[([^\]]+)\]/g;
+      const regexNoName = /\/BBox\s*\[([^\]]+)\][\s\S]{0,3600}?\/Measure\s*<<[\s\S]{0,3600}?\/Subtype\s*\/GEO[\s\S]{0,3600}?\/GPTS\s*\[([^\]]+)\][\s\S]{0,3600}?\/LPTS\s*\[([^\]]+)\]/g;
       while ((match = regexNoName.exec(text)) !== null) {
-        const bbox = parseNumberList(match[1]);
-        const gpts = parseNumberList(match[2]);
-        const lpts = parseNumberList(match[3]);
-        const view = buildGeoView({ bbox, name: "GeoPDF", gpts, lpts, page: 1 });
+        const view = buildGeoView({
+          bbox: parseNumberList(match[1]),
+          name: "GeoPDF",
+          gpts: parseNumberList(match[2]),
+          lpts: parseNumberList(match[3]),
+          page: 1,
+        });
         if (view) views.push(view);
       }
     }
 
     if (!views.length) return null;
-
     views.sort((a, b) => b.area - a.area);
-    return {
-      type: "geopdf",
-      detectedAt: new Date().toISOString(),
-      views,
-    };
+    return { type: "geopdf", detectedAt: new Date().toISOString(), views };
   } catch (error) {
     console.warn("Falha ao detectar GeoPDF:", error);
     return null;
@@ -935,7 +1169,6 @@ function solveHomography(src, dst) {
 
   const result = gaussianSolve(matrix);
   if (!result) return null;
-
   return [...result, 1];
 }
 
@@ -945,11 +1178,9 @@ function gaussianSolve(matrix) {
 
   for (let col = 0; col < n; col++) {
     let pivot = col;
-
     for (let row = col + 1; row < n; row++) {
       if (Math.abs(a[row][col]) > Math.abs(a[pivot][col])) pivot = row;
     }
-
     if (Math.abs(a[pivot][col]) < 1e-12) return null;
 
     [a[col], a[pivot]] = [a[pivot], a[col]];
@@ -978,44 +1209,27 @@ function applyHomography(h, x, y) {
 }
 
 function toggleGpsTracking() {
-  if (gpsWatchId !== null) {
-    stopGpsTracking();
-  } else {
-    startGpsTracking();
-  }
+  if (gpsWatchId !== null) stopGpsTracking();
+  else startGpsTracking();
 }
 
 function startGpsTracking() {
   if (!("geolocation" in navigator)) {
     updateGpsUi("error", "Este navegador não tem suporte a GPS.");
-    showToast("GPS não suportado neste navegador.");
     return;
   }
 
   if (!window.isSecureContext) {
-    updateGpsUi("error", "GPS bloqueado: use HTTPS. No celular, evite abrir por file:// ou IP local sem HTTPS.");
+    updateGpsUi("error", "GPS bloqueado: use HTTPS, como GitHub Pages.");
     showToast("GPS precisa de HTTPS no celular.");
     return;
   }
 
-  updateGpsUi("waiting", "Buscando GPS real... permita a localização no celular e aguarde alguns segundos.");
+  updateGpsUi("waiting", "Buscando GPS real... permita a localização.");
+  const options = { enableHighAccuracy: true, maximumAge: 0, timeout: 30000 };
 
-  const gpsOptions = {
-    enableHighAccuracy: true,
-    maximumAge: 0,
-    timeout: 30000,
-  };
-
-  // Pega uma posição imediata primeiro. Em alguns celulares o watchPosition demora.
-  navigator.geolocation.getCurrentPosition(handleGpsSuccess, handleGpsError, gpsOptions);
-
-  // Depois continua acompanhando a posição.
-  gpsWatchId = navigator.geolocation.watchPosition(
-    handleGpsSuccess,
-    handleGpsError,
-    gpsOptions
-  );
-
+  navigator.geolocation.getCurrentPosition(handleGpsSuccess, handleGpsError, options);
+  gpsWatchId = navigator.geolocation.watchPosition(handleGpsSuccess, handleGpsError, options);
   ui.gpsBtn.textContent = "Parar GPS";
 }
 
@@ -1062,7 +1276,7 @@ function handleGpsError(error) {
 
 function updateGpsForCurrentMap(allowAutoCenter = false) {
   if (!currentGps) {
-    if (gpsWatchId === null) updateGpsUi("stopped");
+    if (gpsWatchId === null) updateGpsUi("stopped", "GPS desligado.");
     return;
   }
 
@@ -1072,7 +1286,7 @@ function updateGpsForCurrentMap(allowAutoCenter = false) {
   }
 
   if (viewerMode !== "pdfjs") {
-    updateGpsUi("active", `GPS ativo: ${formatLatLon(currentGps.lat, currentGps.lon)} • ±${Math.round(currentGps.accuracy || 0)} m<br><strong>Mas o PDF está em modo nativo.</strong> Reabra com PDF.js para desenhar sua posição dentro do mapa.`);
+    updateGpsUi("active", `GPS ativo: ${formatLatLon(currentGps.lat, currentGps.lon)} • mas mapa está em modo nativo.`);
     ui.centerGpsBtn.disabled = true;
     ui.saveGpsPointBtn.disabled = true;
     return;
@@ -1122,7 +1336,6 @@ function geoToCanvas(lat, lon) {
 
     const tolerance = 0.015;
     const inside = uv.u >= -tolerance && uv.u <= 1 + tolerance && uv.v >= -tolerance && uv.v <= 1 + tolerance;
-
     if (!inside) continue;
 
     const bbox = view.bbox;
@@ -1166,7 +1379,7 @@ function renderGpsMarker(location) {
 }
 
 function updateGpsMarkerScale() {
-  const marker = ui.gpsLayer?.querySelector(".gps-user-marker");
+  const marker = ui.gpsLayer.querySelector(".gps-user-marker");
   if (!marker) return;
   marker.style.transform = `scale(${1 / Math.max(zoom, 0.01)})`;
 }
@@ -1183,7 +1396,7 @@ async function centerOnCurrentGps() {
 
   if (pageNum !== currentGpsCanvas.page) {
     pageNum = currentGpsCanvas.page;
-    await renderCurrentPage();
+    await renderCurrentPage({ fitView: true, forceQuality: false });
   }
 
   translate = {
@@ -1201,26 +1414,19 @@ function createPointFromGps() {
     return;
   }
 
-  pendingPoint = {
-    waiting: false,
-    mode: "pdfjs",
-    page: currentGpsCanvas.page,
-    x: currentGpsCanvas.x,
-    y: currentGpsCanvas.y,
-    lat: currentGps.lat,
-    lon: currentGps.lon,
-    accuracy: currentGps.accuracy,
-    source: "gps",
-  };
+  pendingPoint = makePointDraft(currentGpsCanvas.x, currentGpsCanvas.y, currentGpsCanvas.page);
+  pendingPoint.lat = currentGps.lat;
+  pendingPoint.lon = currentGps.lon;
+  pendingPoint.accuracy = currentGps.accuracy;
+  pendingPoint.source = "gps";
 
   openPointModal();
   ui.pointName.value = "Minha localização";
-  ui.pointArea.value = "";
   ui.pointNote.value = `GPS: ${formatLatLon(currentGps.lat, currentGps.lon)} • precisão ±${Math.round(currentGps.accuracy || 0)} m`;
 }
 
 function updateGpsUi(state = "stopped", message = "") {
-  ui.gpsStatus.classList.remove("active", "inside", "outside", "waiting", "error");
+  ui.gpsStatus.classList.remove("active", "inside", "outside", "waiting", "error", "ready");
 
   if (state !== "stopped") {
     ui.gpsStatus.classList.add(state);
@@ -1236,15 +1442,16 @@ function updateGpsUi(state = "stopped", message = "") {
   };
 
   ui.gpsStatus.querySelector("span:last-child").textContent = labels[state] || "GPS";
-  ui.gpsInfo.innerHTML = message || "GPS desligado. Para aparecer no mapa, o PDF precisa ser georreferenciado.";
+  ui.gpsInfo.innerHTML = message || "GPS desligado.";
 }
 
-function formatLatLon(lat, lon) {
-  return `${lat.toFixed(6)}, ${lon.toFixed(6)}`;
+function updateConnectionStatus() {
+  const online = navigator.onLine;
+  ui.connectionStatus.classList.toggle("online", online);
+  ui.connectionStatus.querySelector("span:last-child").textContent = online ? "Online" : "Offline";
 }
 
-
-async function clearAppCacheAndReload() {
+async function clearCacheAndReload() {
   try {
     if ("serviceWorker" in navigator) {
       const regs = await navigator.serviceWorker.getRegistrations();
@@ -1260,29 +1467,45 @@ async function clearAppCacheAndReload() {
     setTimeout(() => location.reload(), 900);
   } catch (error) {
     console.warn(error);
-    showToast("Não consegui limpar tudo, mas vou recarregar.");
-    setTimeout(() => location.reload(), 900);
+    location.reload();
   }
-}
-
-function updateConnectionStatus() {
-  const online = navigator.onLine;
-  ui.connectionStatus.classList.toggle("online", online);
-  ui.connectionStatus.querySelector("span:last-child").textContent = online ? "Online" : "Offline";
-}
-
-function showToast(message) {
-  ui.toast.textContent = message;
-  ui.toast.classList.add("show");
-  clearTimeout(showToast.timer);
-  showToast.timer = setTimeout(() => ui.toast.classList.remove("show"), 2600);
 }
 
 function registerServiceWorker() {
   if (!("serviceWorker" in navigator)) return;
+
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./sw.js").catch((error) => console.warn("Service Worker não registrado:", error));
+    navigator.serviceWorker
+      .register("./sw.js")
+      .catch((error) => console.warn("Service Worker não registrado:", error));
   });
+}
+
+function nextFrame() {
+  return new Promise((resolve) => requestAnimationFrame(() => resolve()));
+}
+
+document.addEventListener("gesturestart", (event) => {
+  if (document.body.classList.contains("map-open")) event.preventDefault();
+}, { passive: false });
+
+document.addEventListener("gesturechange", (event) => {
+  if (document.body.classList.contains("map-open")) event.preventDefault();
+}, { passive: false });
+
+document.addEventListener("gestureend", (event) => {
+  if (document.body.classList.contains("map-open")) event.preventDefault();
+}, { passive: false });
+
+document.addEventListener("touchmove", (event) => {
+  if (!document.body.classList.contains("map-open")) return;
+  if (event.target.closest?.("#mapWrapper")) return;
+  event.preventDefault();
+}, { passive: false });
+
+function randomId() {
+  if (crypto.randomUUID) return crypto.randomUUID();
+  return `id_${Date.now()}_${Math.random().toString(16).slice(2)}`;
 }
 
 function csvCell(value) {
@@ -1298,14 +1521,21 @@ function formatBytes(bytes = 0) {
 
 function formatDate(value) {
   try {
-    return new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short" }).format(new Date(value));
+    return new Intl.DateTimeFormat("pt-BR", {
+      dateStyle: "short",
+      timeStyle: "short",
+    }).format(new Date(value));
   } catch {
     return value;
   }
 }
 
+function formatLatLon(lat, lon) {
+  return `${Number(lat).toFixed(6)}, ${Number(lon).toFixed(6)}`;
+}
+
 function safeFileName(name) {
-  return name.replace(/\.pdf$/i, "").replace(/[^\w\-]+/g, "_").slice(0, 60);
+  return String(name || "mapa").replace(/\.pdf$/i, "").replace(/[^\w\-]+/g, "_").slice(0, 70);
 }
 
 function escapeHtml(value) {
@@ -1317,7 +1547,9 @@ function escapeHtml(value) {
     .replaceAll("'", "&#039;");
 }
 
-function randomId() {
-  if (crypto?.randomUUID) return crypto.randomUUID();
-  return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+function showToast(message) {
+  ui.toast.textContent = message;
+  ui.toast.classList.add("show");
+  clearTimeout(showToast.timer);
+  showToast.timer = setTimeout(() => ui.toast.classList.remove("show"), 2600);
 }

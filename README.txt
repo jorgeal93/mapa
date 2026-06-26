@@ -1,26 +1,34 @@
-# GPF Mapas V1.7 Mapa Corrigido
+# GPF Mapas V1.8 Mobile Estável
 
-Correções desta versão:
+Esta versão foi refeita de forma mais simples para resolver o problema do mapa aparecer no PC e não aparecer no celular.
 
-- Corrige o mapa que não aparecia no celular.
-- Corrige a área do mapa que ficava com altura 0 em alguns aparelhos.
-- Mantém a tela do mapa ocupando mais espaço no celular.
-- Zoom com dois dedos fica preso dentro do mapa.
-- Bloqueia o zoom da aba inteira no iPhone/Safari.
-- Renderiza o PDF em HD e tenta melhorar a nitidez depois do zoom.
-- Mantém GPS real, GeoPDF, pontos e CSV.
+## Principais correções
+
+- Tela do mapa refeita para celular.
+- Removidas regras antigas que podiam zerar a altura do mapa.
+- PDF renderizado com limite seguro para não sumir em iPhone/Android.
+- Zoom com dois dedos preso dentro do mapa.
+- Bloqueio do zoom da aba inteira.
+- Qualidade ajustável: Leve, HD e Ultra.
+- Se o celular não aguentar HD, o app muda para Leve automaticamente.
+- Se PDF.js falhar, abre em modo nativo.
+- Mantém GPS real para GeoPDF.
+- Mantém pontos e CSV.
 
 ## Como testar
 
-1. Suba a pasta no GitHub Pages.
+1. Suba esta pasta no GitHub Pages.
 2. Abra no celular.
 3. Aperte "Limpar cache".
-4. Feche o app/navegador e abra de novo.
-5. Importe o PDF.
-6. Abra o mapa.
-7. Use dois dedos em cima do mapa para dar zoom.
+4. Feche o app/navegador.
+5. Abra de novo.
+6. Importe o PDF.
+7. Abra o mapa.
+8. Teste primeiro com qualidade "HD".
+9. Se não aparecer, mude para "Leve".
+10. Use dois dedos em cima do mapa para zoom.
 
 ## Observação
 
-O modo nativo do celular ainda pode parecer mais nítido porque é o leitor de PDF próprio do aparelho.
-No modo GPS, o app usa canvas para conseguir colocar GPS e pontos por cima do mapa.
+O modo nativo do celular pode ficar mais nítido porque é o leitor próprio de PDF do aparelho.
+O modo PDF.js usa canvas para conseguir colocar GPS e pontos em cima do mapa.
