@@ -723,3 +723,49 @@ button:disabled {
     font-size: 12px;
   }
 }
+
+
+.top-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.gps-info strong {
+  color: var(--primary);
+}
+
+.pdf-status.ready .dot,
+.gps-status.active .dot,
+.gps-status.inside .dot {
+  background: var(--primary);
+}
+
+.gps-status.waiting .dot {
+  background: #ffd166;
+}
+
+.gps-status.outside .dot,
+.gps-status.error .dot {
+  background: var(--danger);
+}
+
+.viewer-note {
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.viewer-note strong {
+  color: var(--primary);
+}
+
+@media (max-width: 720px) {
+  .top-actions {
+    width: 100%;
+  }
+
+  .top-actions button {
+    flex: 1;
+  }
+}

@@ -1,53 +1,42 @@
-# GPF Mapas V1.2 GPS
+# GPF Mapas V1.3 GPS Corrigido
 
-App separado para testar mapas em PDF/GeoPDF com GPS real.
+Correções principais:
 
-## O que entrou nesta versão
+- Corrigido problema de abrir sempre em modo nativo no celular quando o PDF.js falha.
+- Adicionadas 3 opções online de PDF.js: cdnjs, jsDelivr e unpkg.
+- Renderização do PDF ajustada para celular, evitando canvas gigante em mapa A0.
+- GPS agora usa getCurrentPosition primeiro e watchPosition depois.
+- Avisos mais claros quando o GPS está ativo, mas o PDF está em modo nativo.
+- Botão "Limpar cache" para remover versão antiga do PWA/Service Worker.
+- Service Worker atualizado para buscar arquivos novos primeiro.
 
-- Importar PDF/GeoPDF
-- Detectar georreferenciamento do PDF quando existir
-- Mostrar sua localização real no mapa se você estiver dentro do perímetro
-- Botão `Ativar GPS`
-- Botão `Ir para GPS`
-- Botão `Salvar ponto GPS`
-- Continua com zoom, arrastar, páginas e pontos
-- Continua salvando mapas e pontos offline no navegador
-- Exporta pontos em CSV com latitude/longitude quando o ponto vier do GPS
+## Importante
 
-## Importante sobre GPS
+Para o GPS aparecer sobre o mapa, precisa cumprir 3 coisas:
 
-Para o GPS aparecer em cima do mapa:
+1. Abrir o app em HTTPS, por exemplo GitHub Pages.
+2. O mapa precisa abrir em PDF.js, não em "Nativo".
+3. O PDF precisa ser GeoPDF/georreferenciado.
 
-1. O PDF precisa ser GeoPDF/georreferenciado.
-2. O app precisa abrir no modo PDF.js.
-3. No celular, o site precisa estar em HTTPS, como GitHub Pages.
-4. O usuário precisa permitir localização no navegador.
+Se aparecer "Nativo", o GPS pode até pegar sua latitude/longitude, mas não consegue desenhar sua posição em cima do mapa.
 
-No VS Code com Live Server pelo computador, o GPS pode funcionar em `localhost`.
-No celular usando `http://IP-DO-PC:5500`, normalmente o navegador bloqueia GPS porque não é HTTPS.
+## Teste no celular
 
-## PDF.js
+1. Suba esta pasta no GitHub Pages.
+2. Abra o link HTTPS no celular.
+3. Aperte "Limpar cache" uma vez.
+4. Importe o PDF de mapa.
+5. Abra o mapa.
+6. Veja se o status mostra "PDF.js online", "PDF.js jsDelivr" ou "PDF.js unpkg".
+7. Aperte "Ativar GPS".
+8. Permita localização.
+9. Aguarde alguns segundos ao ar livre.
 
-A versão tenta carregar:
+## Para ficar 100% offline
 
-- `libs/pdf.min.js`
-- `libs/pdf.worker.min.js`
+Coloque estes arquivos dentro da pasta libs:
 
-Se esses arquivos não existirem, ela tenta carregar PDF.js online quando houver internet.
+- libs/pdf.min.js
+- libs/pdf.worker.min.js
 
-Para ficar 100% offline no campo, coloque esses dois arquivos dentro da pasta `libs/`.
-
-## Teste recomendado
-
-1. Extraia a pasta.
-2. Abra no VS Code.
-3. Rode com Live Server.
-4. Teste online uma vez para carregar PDF.js se a pasta `libs/` estiver vazia.
-5. Importe o GeoPDF.
-6. Publique no GitHub Pages para testar GPS real no celular.
-7. No celular, abra o app, permita localização e toque em `Ativar GPS`.
-
-## Observação
-
-PDF comum abre e aceita pontos manuais, mas não consegue encaixar o GPS no mapa.
-GeoPDF permite encaixar o GPS no mapa porque tem coordenadas internas.
+Sem eles, o app usa internet para carregar PDF.js na primeira vez.

@@ -1,4 +1,4 @@
-/* GPF Mapas V1.2 GPS
+/* GPF Mapas V1.3 GPS corrigido
    - GPS real em GeoPDF
    - Detecta georreferenciamento GPTS/LPTS no PDF
    - Mostra localização se estiver dentro do perímetro do mapa
@@ -12,8 +12,23 @@ const MAP_STORE = "maps";
 const POINT_STORE = "points";
 const LOCAL_PDF_JS = "./libs/pdf.min.js";
 const LOCAL_PDF_WORKER = "./libs/pdf.worker.min.js";
-const CDN_PDF_JS = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
-const CDN_PDF_WORKER = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+const CDN_PDF_OPTIONS = [
+  {
+    label: "PDF.js online",
+    script: "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js",
+    worker: "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"
+  },
+  {
+    label: "PDF.js jsDelivr",
+    script: "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js",
+    worker: "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js"
+  },
+  {
+    label: "PDF.js unpkg",
+    script: "https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.min.js",
+    worker: "https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js"
+  }
+];
 
 const $ = (selector) => document.querySelector(selector);
 
@@ -22,6 +37,7 @@ const ui = {
   mapScreen: $("#mapScreen"),
   pdfInput: $("#pdfInput"),
   refreshMapsBtn: $("#refreshMapsBtn"),
+  updateAppBtn: $("#updateAppBtn"),
   mapList: $("#mapList"),
   emptyState: $("#emptyState"),
   connectionStatus: $("#connectionStatus"),
@@ -111,6 +127,7 @@ async function loadLocalPdfJs() {
     return true;
   }
 
+  // 1) Tenta biblioteca local em ./libs/
   try {
     await loadScriptOnce(LOCAL_PDF_JS);
     if (window.pdfjsLib) {
@@ -118,18 +135,21 @@ async function loadLocalPdfJs() {
       return true;
     }
   } catch {
-    // Continua para fallback online
+    // Continua para opções online
   }
 
+  // 2) Tenta CDNs diferentes. Isso ajuda no celular quando um CDN falha.
   if (navigator.onLine) {
-    try {
-      await loadScriptOnce(CDN_PDF_JS);
-      if (window.pdfjsLib) {
-        preparePdfJs(CDN_PDF_WORKER, "PDF.js online");
-        return true;
+    for (const option of CDN_PDF_OPTIONS) {
+      try {
+        await loadScriptOnce(option.script);
+        if (window.pdfjsLib) {
+          preparePdfJs(option.worker, option.label);
+          return true;
+        }
+      } catch {
+        // Tenta o próximo CDN
       }
-    } catch {
-      // Continua para modo nativo
     }
   }
 
@@ -139,17 +159,23 @@ async function loadLocalPdfJs() {
 
 function loadScriptOnce(src) {
   return new Promise((resolve, reject) => {
-    const existing = [...document.scripts].find((script) => script.src.endsWith(src.replace("./", "")) || script.src === src);
+    const existing = [...document.scripts].find((script) => script.src === src);
     if (existing) {
-      existing.addEventListener("load", resolve, { once: true });
-      existing.addEventListener("error", reject, { once: true });
+      if (window.pdfjsLib) return resolve(true);
+      existing.addEventListener("load", () => resolve(true), { once: true });
+      existing.addEventListener("error", () => reject(new Error(`Não carregou ${src}`)), { once: true });
       return;
     }
 
     const script = document.createElement("script");
     script.src = src;
+    script.async = true;
+    script.crossOrigin = "anonymous";
     script.onload = () => resolve(true);
-    script.onerror = () => reject(new Error(`Não carregou ${src}`));
+    script.onerror = () => {
+      script.remove();
+      reject(new Error(`Não carregou ${src}`));
+    };
     document.head.appendChild(script);
   });
 }
@@ -240,6 +266,7 @@ function getPointsByMap(mapId) {
 function setupEvents() {
   ui.pdfInput.addEventListener("change", handlePdfImport);
   ui.refreshMapsBtn.addEventListener("click", renderMapList);
+  ui.updateAppBtn?.addEventListener("click", clearAppCacheAndReload);
 
   ui.backBtn.addEventListener("click", () => {
     ui.mapScreen.classList.remove("active");
@@ -407,8 +434,8 @@ async function openMap(mapId) {
     updateGpsForCurrentMap(false);
   } catch (error) {
     console.error(error);
-    openNativeMap();
-    showToast("Abri pelo visualizador nativo.");
+    if (currentMap) openNativeMap();
+    showToast("PDF.js falhou no celular. Abri pelo visualizador nativo.");
   }
 }
 
@@ -416,7 +443,7 @@ async function openPdfJsMap() {
   viewerMode = "pdfjs";
   ui.mapWrapper.classList.remove("native-mode", "placing-native-point");
   ui.viewerNote.textContent = currentMap.georef?.views?.length
-    ? "Modo mapa com GPS: GeoPDF detectado. Ative o GPS para localizar sua posição no perímetro."
+    ? `Modo mapa com GPS: GeoPDF detectado (${currentMap.georef.views.length} área(s)). Ative o GPS para localizar sua posição no perímetro.`
     : "Modo PDF.js: este PDF não tem georreferenciamento detectado, então o GPS real não pode ser encaixado no mapa.";
   setPdfControlsEnabled(true);
 
@@ -431,9 +458,9 @@ function openNativeMap() {
   viewerMode = "native";
   ui.mapWrapper.classList.add("native-mode");
   setPdfControlsEnabled(false);
-  ui.viewerNote.textContent = currentMap.georef?.views?.length
-    ? "GeoPDF detectado, mas para mostrar GPS em cima do mapa precisa do modo PDF.js. Coloque pdf.min.js e pdf.worker.min.js na pasta libs ou abra online uma vez."
-    : "Modo nativo: funciona sem internet e sem biblioteca externa. Para GPS em cima do mapa, o PDF precisa ser GeoPDF e abrir no modo PDF.js.";
+  ui.viewerNote.innerHTML = currentMap.georef?.views?.length
+    ? "<strong>Modo nativo:</strong> GeoPDF detectado, mas o GPS não consegue aparecer sobre o mapa neste modo. Para corrigir, abra online uma vez ou coloque pdf.min.js e pdf.worker.min.js na pasta libs."
+    : "<strong>Modo nativo:</strong> o PDF abriu pelo visualizador do celular. Neste modo dá para visualizar, mas o GPS não fica preso no mapa.";
   ui.pageInfo.textContent = "Visualizador nativo do navegador";
 
   if (nativeUrl) URL.revokeObjectURL(nativeUrl);
@@ -464,7 +491,13 @@ async function renderCurrentPage() {
     const page = await pdfDoc.getPage(pageNum);
     const wrapperWidth = Math.max(ui.mapWrapper.clientWidth - 40, 320);
     const naturalViewport = page.getViewport({ scale: 1 });
-    const baseScale = Math.min(2, Math.max(1, wrapperWidth / naturalViewport.width));
+
+    // Corrigido para celular:
+    // antes forçava scale >= 1, gerando canvas muito grande em mapas A0.
+    // agora renderiza leve, mas mantém coordenada correta para GPS/pontos.
+    const deviceRatio = Math.min(window.devicePixelRatio || 1, 1.6);
+    const fitScale = (wrapperWidth / naturalViewport.width) * deviceRatio;
+    const baseScale = Math.min(1.35, Math.max(0.25, fitScale));
     const viewport = page.getViewport({ scale: baseScale });
     currentPdfViewport = viewport;
 
@@ -960,20 +993,27 @@ function startGpsTracking() {
   }
 
   if (!window.isSecureContext) {
-    updateGpsUi("error", "GPS bloqueado: use HTTPS ou localhost.");
-    showToast("GPS precisa de HTTPS ou localhost.");
+    updateGpsUi("error", "GPS bloqueado: use HTTPS. No celular, evite abrir por file:// ou IP local sem HTTPS.");
+    showToast("GPS precisa de HTTPS no celular.");
     return;
   }
 
-  updateGpsUi("waiting", "Aguardando permissão e sinal do GPS...");
+  updateGpsUi("waiting", "Buscando GPS real... permita a localização no celular e aguarde alguns segundos.");
+
+  const gpsOptions = {
+    enableHighAccuracy: true,
+    maximumAge: 0,
+    timeout: 30000,
+  };
+
+  // Pega uma posição imediata primeiro. Em alguns celulares o watchPosition demora.
+  navigator.geolocation.getCurrentPosition(handleGpsSuccess, handleGpsError, gpsOptions);
+
+  // Depois continua acompanhando a posição.
   gpsWatchId = navigator.geolocation.watchPosition(
     handleGpsSuccess,
     handleGpsError,
-    {
-      enableHighAccuracy: true,
-      maximumAge: 1000,
-      timeout: 15000,
-    }
+    gpsOptions
   );
 
   ui.gpsBtn.textContent = "Parar GPS";
@@ -1032,7 +1072,7 @@ function updateGpsForCurrentMap(allowAutoCenter = false) {
   }
 
   if (viewerMode !== "pdfjs") {
-    updateGpsUi("active", "GPS ativo, mas o mapa precisa estar no modo PDF.js para mostrar a posição.");
+    updateGpsUi("active", `GPS ativo: ${formatLatLon(currentGps.lat, currentGps.lon)} • ±${Math.round(currentGps.accuracy || 0)} m<br><strong>Mas o PDF está em modo nativo.</strong> Reabra com PDF.js para desenhar sua posição dentro do mapa.`);
     ui.centerGpsBtn.disabled = true;
     ui.saveGpsPointBtn.disabled = true;
     return;
@@ -1201,6 +1241,28 @@ function updateGpsUi(state = "stopped", message = "") {
 
 function formatLatLon(lat, lon) {
   return `${lat.toFixed(6)}, ${lon.toFixed(6)}`;
+}
+
+
+async function clearAppCacheAndReload() {
+  try {
+    if ("serviceWorker" in navigator) {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map((reg) => reg.unregister()));
+    }
+
+    if ("caches" in window) {
+      const keys = await caches.keys();
+      await Promise.all(keys.map((key) => caches.delete(key)));
+    }
+
+    showToast("Cache limpo. Recarregando...");
+    setTimeout(() => location.reload(), 900);
+  } catch (error) {
+    console.warn(error);
+    showToast("Não consegui limpar tudo, mas vou recarregar.");
+    setTimeout(() => location.reload(), 900);
+  }
 }
 
 function updateConnectionStatus() {
