@@ -1,4 +1,4 @@
-const CACHE_NAME = "gpf-mapas-v1-8-mobile-estavel";
+const CACHE_NAME = "gpf-mapas-v1-9-gps-flutuante-nitido";
 const APP_SHELL = [
   "./",
   "./index.html",

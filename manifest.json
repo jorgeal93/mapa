@@ -1,7 +1,7 @@
 {
-  "name": "GPF Mapas V1.8",
+  "name": "GPF Mapas V1.9",
   "short_name": "GPF Mapas",
-  "description": "App separado para PDF/GeoPDF com GPS e zoom no celular.",
+  "description": "GPF Mapas V1.9 - GPS flutuante e modo Nítido/Nativo para mapas PDF.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

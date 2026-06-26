@@ -793,3 +793,109 @@ textarea {
     max-height: 20dvh;
   }
 }
+
+
+/* ===== V1.9 GPS flutuante + nitidez ===== */
+
+.floating-map-actions {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  z-index: 80;
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 7px;
+  pointer-events: auto;
+  touch-action: manipulation !important;
+}
+
+.floating-map-actions button {
+  min-height: 42px;
+  min-width: 48px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.18);
+  background: rgba(7, 20, 12, .88);
+  color: var(--text);
+  font-weight: 900;
+  box-shadow: 0 10px 28px rgba(0,0,0,.35);
+  backdrop-filter: blur(14px);
+  touch-action: manipulation !important;
+}
+
+.floating-map-actions .float-main {
+  grid-row: span 2;
+  min-width: 64px;
+  background: linear-gradient(135deg, var(--primary), #7ef2aa);
+  color: #031009;
+}
+
+.floating-map-actions button:disabled {
+  opacity: .45;
+}
+
+#floatNativeBtn {
+  color: #d9ffe7;
+}
+
+.map-wrapper.native-mode .floating-map-actions {
+  display: flex;
+}
+
+.map-wrapper.native-mode #floatCenterGpsBtn,
+.map-wrapper.native-mode #floatSaveGpsBtn {
+  display: none;
+}
+
+.map-wrapper.native-mode #floatGpsBtn {
+  display: none;
+}
+
+.map-wrapper.native-mode #floatNativeBtn {
+  min-width: 92px;
+}
+
+.map-wrapper.native-mode #floatNativeBtn::after {
+  content: " GPS";
+}
+
+#pdfViewBtn:not([hidden]) {
+  background: rgba(40, 199, 111, .18);
+  border-color: rgba(40, 199, 111, .45);
+}
+
+.quality-warning {
+  color: var(--warning);
+  font-weight: 800;
+}
+
+@media (max-width: 720px) {
+  .floating-map-actions {
+    right: 8px;
+    bottom: 8px;
+    gap: 6px;
+  }
+
+  .floating-map-actions button {
+    min-height: 40px;
+    min-width: 44px;
+    padding: 0 10px;
+    font-size: 12px;
+  }
+
+  .floating-map-actions .float-main {
+    min-width: 58px;
+  }
+
+  body.map-open .map-controls {
+    padding-right: 72px;
+  }
+
+  body.map-open .point-panel {
+    max-height: 18dvh;
+  }
+
+  body.map-open .points-list {
+    max-height: 10dvh;
+  }
+}
