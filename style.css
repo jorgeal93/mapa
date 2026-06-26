@@ -1008,3 +1008,61 @@ body.map-open {
     font-size: 28px;
   }
 }
+
+
+/* ===== V1.5 Pinch Ultra HD ===== */
+
+.map-wrapper {
+  touch-action: none;
+  overscroll-behavior: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.map-stage {
+  transform: translate3d(0, 0, 0);
+  contain: layout paint;
+}
+
+.map-stage.rendering::after {
+  content: "HD";
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  padding: 6px 9px;
+  border-radius: 999px;
+  background: rgba(7, 20, 12, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #bfffd8;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  z-index: 12;
+  pointer-events: none;
+}
+
+#pdfCanvas {
+  image-rendering: auto;
+  transform: translateZ(0);
+}
+
+.map-wrapper.pinching .map-stage {
+  cursor: zoom-in;
+}
+
+.pinch-hint {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+@media (max-width: 720px) {
+  .map-wrapper {
+    height: calc(100dvh - 164px);
+  }
+
+  .viewer-note::after {
+    content: " • Use dois dedos para aproximar/afastar.";
+    color: var(--primary);
+    font-weight: 800;
+  }
+}

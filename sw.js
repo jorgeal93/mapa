@@ -1,4 +1,4 @@
-const CACHE_NAME = "gpf-mapas-v1-4-mobile-hd-cache";
+const CACHE_NAME = "gpf-mapas-v1-5-pinch-ultra-hd-cache";
 const APP_SHELL = [
   "./",
   "./index.html",

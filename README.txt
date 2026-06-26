@@ -1,35 +1,32 @@
-# GPF Mapas V1.4 Mobile HD
+# GPF Mapas V1.5 Pinch Ultra HD
 
 Melhorias desta versão:
 
-- Layout mais responsivo para celular.
-- A tela do mapa fica maior no celular.
-- Cabeçalho é ocultado quando o mapa está aberto para ganhar espaço.
-- Controles do mapa viraram barra horizontal com rolagem no celular.
-- PDF renderizado em qualidade maior.
-- Zoom mais nítido em mapas grandes/A0.
-- Zoom centralizado na tela ou no cursor.
-- Botões com nomes menores para caber melhor no celular.
+- Zoom com dois dedos direto em cima do mapa no celular.
+- Arrastar o mapa com um dedo.
+- Renderização mais nítida ao aproximar.
+- O app re-renderiza o PDF em maior resolução depois do zoom.
+- Melhor centralização do PDF ao abrir.
 - Mantém GPS real, GeoPDF, pontos e exportação CSV.
 
-## Por que a imagem ficava feia?
+## Por que antes ficava feio?
 
-A versão anterior renderizava o PDF em escala leve para não travar no celular.
-Isso deixava o mapa rápido, mas quando dava zoom os detalhes ficavam borrados.
+Antes o PDF era renderizado uma vez e o zoom aumentava a mesma imagem.
+Isso deixa o mapa borrado quando aproxima.
 
-Nesta V1.4 o app renderiza o PDF em uma resolução maior e mostra em tamanho menor por CSS.
-Assim o zoom fica mais limpo.
+Agora o zoom continua rápido durante o gesto, e depois o app redesenha o PDF em HD/Ultra HD para melhorar a nitidez.
 
-## Para testar no celular
+## Como testar
 
 1. Suba a pasta no GitHub Pages.
-2. Abra o app no celular.
-3. Aperte "Limpar cache" uma vez.
+2. Abra no celular.
+3. Aperte "Limpar cache".
 4. Feche e abra o app novamente.
 5. Importe o PDF.
 6. Abra o mapa.
-7. Teste zoom, arraste e GPS.
+7. Use dois dedos diretamente no mapa para aproximar/afastar.
+8. Aguarde meio segundo depois do zoom para o HD ficar mais nítido.
 
 ## Observação
 
-Se o PDF for muito pesado, a primeira abertura pode demorar um pouco mais, porque agora a qualidade está maior.
+Em PDFs muito pesados, a primeira renderização Ultra HD pode demorar alguns segundos.
