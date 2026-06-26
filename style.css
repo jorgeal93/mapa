@@ -605,3 +605,121 @@ textarea:focus {
     align-items: flex-start;
   }
 }
+
+
+/* GPS V1.2 */
+button:disabled {
+  opacity: 0.48;
+  cursor: not-allowed;
+}
+
+.gps-status.active .dot,
+.gps-status.inside .dot {
+  background: var(--primary);
+}
+
+.gps-status.waiting .dot {
+  background: #ffd166;
+}
+
+.gps-status.outside .dot,
+.gps-status.error .dot {
+  background: var(--danger);
+}
+
+.gps-info {
+  margin: -2px 0 10px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: rgba(40, 199, 111, 0.08);
+  border: 1px solid rgba(40, 199, 111, 0.18);
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.gps-info strong {
+  color: var(--text);
+}
+
+.geo-badge {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  margin-top: 7px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(40, 199, 111, 0.12);
+  border: 1px solid rgba(40, 199, 111, 0.22);
+  color: #bfffd8 !important;
+  font-size: 12px !important;
+  font-weight: 900;
+}
+
+.gps-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 4;
+}
+
+.gps-user-marker {
+  position: absolute;
+  width: 42px;
+  height: 42px;
+  translate: -50% -50%;
+  pointer-events: none;
+  transform-origin: center;
+  z-index: 5;
+}
+
+.gps-accuracy-circle {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: rgba(66, 165, 245, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  box-shadow: 0 0 0 1px rgba(66, 165, 245, 0.30);
+}
+
+.gps-dot-real {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  translate: -50% -50%;
+  background: #42a5f5;
+  border: 4px solid #fff;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.45);
+}
+
+.gps-pulse {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  translate: -50% -50%;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  animation: gpsPulse 1.8s ease-out infinite;
+}
+
+@keyframes gpsPulse {
+  from {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  to {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+
+@media (max-width: 720px) {
+  .gps-info {
+    font-size: 12px;
+  }
+}

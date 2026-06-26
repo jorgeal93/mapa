@@ -1,45 +1,53 @@
-# GPF Mapas V1.1 Offline
+# GPF Mapas V1.2 GPS
 
-App separado para testar mapas em PDF no celular.
+App separado para testar mapas em PDF/GeoPDF com GPS real.
 
-## O que mudou da V1 para V1.1
+## O que entrou nesta versão
 
-- Removido CDN obrigatório no index.html.
-- O app tenta carregar PDF.js local em `libs/pdf.min.js`.
-- O worker local esperado é `libs/pdf.worker.min.js`.
-- Se os arquivos PDF.js não estiverem na pasta, o app abre PDF pelo visualizador nativo do navegador.
-- Continua salvando PDFs e pontos no navegador/celular usando IndexedDB.
-- Continua com PWA e Service Worker.
+- Importar PDF/GeoPDF
+- Detectar georreferenciamento do PDF quando existir
+- Mostrar sua localização real no mapa se você estiver dentro do perímetro
+- Botão `Ativar GPS`
+- Botão `Ir para GPS`
+- Botão `Salvar ponto GPS`
+- Continua com zoom, arrastar, páginas e pontos
+- Continua salvando mapas e pontos offline no navegador
+- Exporta pontos em CSV com latitude/longitude quando o ponto vier do GPS
 
-## Modo completo
+## Importante sobre GPS
 
-Para o modo completo com canvas, páginas, zoom e pontos presos ao PDF, coloque na pasta `libs/`:
+Para o GPS aparecer em cima do mapa:
 
-- pdf.min.js
-- pdf.worker.min.js
+1. O PDF precisa ser GeoPDF/georreferenciado.
+2. O app precisa abrir no modo PDF.js.
+3. No celular, o site precisa estar em HTTPS, como GitHub Pages.
+4. O usuário precisa permitir localização no navegador.
 
-Versão recomendada: pdfjs-dist 3.11.174.
+No VS Code com Live Server pelo computador, o GPS pode funcionar em `localhost`.
+No celular usando `http://IP-DO-PC:5500`, normalmente o navegador bloqueia GPS porque não é HTTPS.
 
-## Modo nativo
+## PDF.js
 
-Sem os arquivos da biblioteca, o app funciona em modo nativo:
+A versão tenta carregar:
 
-- Abre PDF offline.
-- Salva o PDF no navegador/celular.
-- Permite criar pontos básicos.
-- Exporta pontos em CSV.
+- `libs/pdf.min.js`
+- `libs/pdf.worker.min.js`
 
-Mas o controle de página/zoom fica por conta do navegador.
+Se esses arquivos não existirem, ela tenta carregar PDF.js online quando houver internet.
 
-## Como testar
+Para ficar 100% offline no campo, coloque esses dois arquivos dentro da pasta `libs/`.
 
-1. Extraia a pasta `gpf-mapas-v1.1-offline`.
-2. Abra a pasta no VS Code.
+## Teste recomendado
+
+1. Extraia a pasta.
+2. Abra no VS Code.
 3. Rode com Live Server.
-4. Importe um PDF.
-5. Abra o mapa.
-6. Veja se aparece "PDF.js local" ou "Nativo" no topo.
+4. Teste online uma vez para carregar PDF.js se a pasta `libs/` estiver vazia.
+5. Importe o GeoPDF.
+6. Publique no GitHub Pages para testar GPS real no celular.
+7. No celular, abra o app, permita localização e toque em `Ativar GPS`.
 
 ## Observação
 
-Neste pacote a pasta `libs/` está preparada. Os arquivos reais do PDF.js precisam ser colocados nela para ativar o modo completo sem CDN.
+PDF comum abre e aceita pontos manuais, mas não consegue encaixar o GPS no mapa.
+GeoPDF permite encaixar o GPS no mapa porque tem coordenadas internas.
