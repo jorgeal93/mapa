@@ -5,7 +5,7 @@
    - Botão Localizar fixo
 */
 
-const DB_NAME = "campogeo-v4-3-db";
+const DB_NAME = "campogeo-v4-5-db";
 const DB_VERSION = 1;
 const MAP_STORE = "maps";
 const ASSET_STORE = "assets";
@@ -38,6 +38,7 @@ const ui = {
   refreshMapsBtn: $("#refreshMapsBtn"),
   resetAllBtn: $("#resetAllBtn"),
   clearCacheBtn: $("#clearCacheBtn"),
+  renderQualitySelect: $("#renderQualitySelect"),
   mapList: $("#mapList"),
   emptyState: $("#emptyState"),
 
@@ -556,8 +557,8 @@ async function renderMapList() {
       : `<span class="geo-badge">PDF comum • sem GPS no mapa</span>`;
 
     const realBadge = map.realMap?.blob
-      ? `<span class="real-badge">Mapa real salvo offline • ${map.realMap.width}×${map.realMap.height}px</span>`
-      : `<span class="real-badge">Toque em Gerar ou Abrir para preparar</span>`;
+      ? `<span class="real-badge">Mapa salvo • ${map.realMap.width}×${map.realMap.height}px</span><span class="render-badge">${map.realMap.quality || "Render"} • ${(map.realMap.mime || map.realMap.format || "").replace("image/", "").toUpperCase()}</span>`
+      : `<span class="real-badge">Toque em Gerar para preparar</span>`;
 
     card.innerHTML = `
       <div>
@@ -596,7 +597,8 @@ async function prepareMapById(mapId) {
     return;
   }
 
-  const ok = confirm("Gerar mapa real agora? Isso pode demorar alguns segundos.");
+  const qualityName = ui.renderQualitySelect?.selectedOptions?.[0]?.textContent || "Alta";
+  const ok = confirm(`Gerar mapa real em qualidade ${qualityName}?\n\nQuanto maior a qualidade, mais demora e mais espaço ocupa.`);
   if (!ok) return;
 
   try {
@@ -636,53 +638,96 @@ async function ensureRealMap(map, force = false) {
   return map;
 }
 
+
+function getRenderQualitySettings() {
+  const value = ui.renderQualitySelect?.value || "high";
+  const isMobile = window.matchMedia("(max-width: 720px)").matches;
+
+  const profiles = {
+    safe: {
+      label: "Segura",
+      maxSide: isMobile ? 2800 : 4400,
+      maxPixels: isMobile ? 6500000 : 13000000,
+      maxScale: isMobile ? 3.0 : 4.8,
+      minScale: 1.25,
+      format: "image/jpeg",
+      quality: 0.95,
+      timeout: isMobile ? 30000 : 42000,
+    },
+    high: {
+      label: "Alta",
+      maxSide: isMobile ? 4200 : 6200,
+      maxPixels: isMobile ? 12000000 : 24000000,
+      maxScale: isMobile ? 4.6 : 6.4,
+      minScale: 1.8,
+      format: "image/png",
+      quality: 1,
+      timeout: isMobile ? 45000 : 65000,
+    },
+    ultra: {
+      label: "Ultra",
+      maxSide: isMobile ? 5600 : 8200,
+      maxPixels: isMobile ? 20000000 : 38000000,
+      maxScale: isMobile ? 6.2 : 8.2,
+      minScale: 2.2,
+      format: "image/png",
+      quality: 1,
+      timeout: isMobile ? 70000 : 90000,
+    },
+  };
+
+  return profiles[value] || profiles.high;
+}
+
 async function renderPdfToRealMap(arrayBuffer) {
+  const settings = getRenderQualitySettings();
   const copy = arrayBuffer.slice(0);
 
-  showProgress("Gerando mapa real", "Abrindo PDF...", 18);
+  showProgress("Gerando mapa real", `Abrindo PDF • qualidade ${settings.label}...`, 14);
   await nextFrame();
 
-  const pdfDoc = await pdfjsLib.getDocument({ data: copy }).promise;
+  const pdfDoc = await pdfjsLib.getDocument({ data: copy, disableFontFace: false, useSystemFonts: true }).promise;
   if (cancelRenderRequested) throw new Error("Geração cancelada.");
 
   const page = await pdfDoc.getPage(1);
   const natural = page.getViewport({ scale: 1 });
 
-  // V3.1: resolução segura para celular. Evita tela travada.
-  const isMobile = window.matchMedia("(max-width: 720px)").matches;
-  const maxSide = isMobile ? 2600 : 4200;
-  const maxPixels = isMobile ? 5200000 : 11000000;
-
-  let scale = Math.min(maxSide / natural.width, maxSide / natural.height);
-  scale = Math.max(1.15, Math.min(scale, isMobile ? 2.7 : 4.2));
+  let scale = Math.min(settings.maxSide / natural.width, settings.maxSide / natural.height);
+  scale = Math.max(settings.minScale, Math.min(scale, settings.maxScale));
 
   let viewport = page.getViewport({ scale });
 
-  while (viewport.width * viewport.height > maxPixels && scale > 0.85) {
-    scale *= 0.82;
+  while (viewport.width * viewport.height > settings.maxPixels && scale > 0.9) {
+    scale *= 0.86;
     viewport = page.getViewport({ scale });
   }
 
   const width = Math.max(1, Math.floor(viewport.width));
   const height = Math.max(1, Math.floor(viewport.height));
 
-  showProgress("Gerando mapa real", `Renderizando seguro: ${width}×${height}px...`, 42);
+  showProgress("Renderizando mapa", `${settings.label}: ${width}×${height}px...`, 38);
   await nextFrame();
 
   const canvas = document.createElement("canvas");
   canvas.width = width;
   canvas.height = height;
 
-  const c = canvas.getContext("2d", { alpha: false });
+  const c = canvas.getContext("2d", { alpha: false, willReadFrequently: false });
   c.imageSmoothingEnabled = true;
   c.imageSmoothingQuality = "high";
-  c.fillStyle = "#fff";
+  c.fillStyle = "#ffffff";
   c.fillRect(0, 0, canvas.width, canvas.height);
 
-  const renderTask = page.render({ canvasContext: c, viewport });
+  const renderTask = page.render({
+    canvasContext: c,
+    viewport,
+    intent: "display",
+    renderInteractiveForms: false,
+  });
+
   activeRenderTask = renderTask;
 
-  await promiseWithTimeout(renderTask.promise, isMobile ? 25000 : 35000, () => {
+  await promiseWithTimeout(renderTask.promise, settings.timeout, () => {
     try { renderTask.cancel(); } catch {}
   });
 
@@ -690,15 +735,20 @@ async function renderPdfToRealMap(arrayBuffer) {
 
   if (cancelRenderRequested) throw new Error("Geração cancelada.");
 
-  showProgress("Salvando offline", "Salvando imagem leve do mapa...", 78);
+  showProgress("Otimizando mapa", settings.format === "image/png" ? "Salvando em PNG nítido..." : "Salvando imagem leve...", 76);
   await nextFrame();
 
-  // JPEG é muito mais leve que PNG em celulares e evita travar no IndexedDB.
-  let blob = await canvasToBlob(canvas, "image/jpeg", 0.92);
+  let blob;
 
-  // Se por algum motivo JPEG não funcionar bem, tenta PNG.
+  try {
+    blob = await canvasToBlob(canvas, settings.format, settings.quality);
+  } catch {
+    blob = null;
+  }
+
+  // Se o PNG ficar pesado demais ou falhar no celular, usa JPEG em alta qualidade.
   if (!blob || blob.size < 1000) {
-    blob = await canvasToBlob(canvas, "image/png", 1);
+    blob = await canvasToBlob(canvas, "image/jpeg", 0.97);
   }
 
   showProgress("Finalizando", "Mapa real pronto.", 96);
@@ -706,11 +756,13 @@ async function renderPdfToRealMap(arrayBuffer) {
 
   return {
     blob,
-    mime: blob.type || "image/jpeg",
+    mime: blob.type || settings.format,
     width: canvas.width,
     height: canvas.height,
     page: 1,
     scale,
+    quality: settings.label,
+    format: blob.type || settings.format,
     createdAt: new Date().toISOString(),
   };
 }
@@ -802,6 +854,10 @@ async function loadRealMapImage(map) {
     ui.mapImage.onload = resolve;
     ui.mapImage.onerror = reject;
   });
+
+  try {
+    await ui.mapImage.decode?.();
+  } catch {}
 
   imageNaturalSize = {
     width: map.realMap.width,

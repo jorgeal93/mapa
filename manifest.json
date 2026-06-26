@@ -1,7 +1,7 @@
 {
   "name": "CampoGeo",
   "short_name": "CampoGeo",
-  "description": "CampoGeo - mapas offline com GPS para uso em campo.",
+  "description": "CampoGeo - mapas offline com renderização melhorada.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

@@ -1,4 +1,4 @@
-const CACHE_NAME = "campogeo-v4-3-logo-sem-fundo";
+const CACHE_NAME = "campogeo-v4-5-render-melhor";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -10,7 +10,9 @@ const APP_SHELL = [
   "./icon-192.png",
   "./apple-touch-icon.png",
   "./icon-96.png",
-  "./icon-48.png"
+  "./icon-48.png",
+  "./icon-home-512.png",
+  "./icon-home-180.png"
 ];
 
 const PDFJS_ASSETS = [

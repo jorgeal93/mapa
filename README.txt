@@ -1,18 +1,20 @@
-# CampoGeo V4.3 — Logo sem fundo branco
+# CampoGeo V4.5 — Render Melhor
 
-Correção:
-- Fundo branco externo da logo removido.
-- Logo no carregamento usa PNG com transparência.
-- Logo do cabeçalho também sem fundo branco.
-- Ícones foram recriados:
-  - campogeo-logo.png
-  - logo-sem-fundo.png
-  - icon-512.png
-  - icon-192.png
-  - apple-touch-icon.png
+Melhorias:
+- Seletor de qualidade: Segura, Alta e Ultra.
+- Qualidade Alta usa PNG quando possível.
+- Ultra aumenta mais a resolução do mapa.
+- O app mostra a resolução do mapa salvo.
+- Mantém fallback para JPEG se o celular não aguentar.
 
-Se no navegador ainda aparecer branco:
-1. Aperte Limpar cache no app.
-2. Recarregue a página.
-3. Ou abra em guia anônima.
-4. No celular, remova o app da tela inicial e adicione de novo.
+Como usar:
+1. Abra o app.
+2. Escolha a qualidade.
+3. Importe o PDF.
+4. Toque em Gerar.
+5. Para mapa mais nítido, use Alta ou Ultra.
+6. Se travar ou demorar demais, use Segura.
+
+Dica:
+- Alta é o melhor equilíbrio.
+- Ultra é mais pesado e pode demorar em celular fraco.
