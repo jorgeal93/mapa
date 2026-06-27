@@ -11,15 +11,15 @@
   <meta name="description" content="CampoGeo - mapas offline com GPS para campo." />
   <title>CampoGeo</title>
   <link rel="manifest" href="./manifest.json" />
-  <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png?v=4.8" />
-  <link rel="apple-touch-icon" href="./apple-touch-icon.png?v=4.8" />
+  <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png?v=4.9" />
+  <link rel="apple-touch-icon" href="./apple-touch-icon.png?v=4.9" />
   <link rel="stylesheet" href="./style.css" />
 </head>
 
 <body class="mobile-ready app-loading">
   <div class="splash-screen" id="splashScreen">
     <div class="splash-card">
-      <img class="splash-logo" src="./campogeo-logo.png?v=4.8" alt="CampoGeo" />
+      <img class="splash-logo" src="./campogeo-logo.png?v=4.9" alt="CampoGeo" />
       <div class="splash-copy">
         <strong>CampoGeo</strong>
         <span>Mapas offline para campo</span>
@@ -30,7 +30,7 @@
 
   <header class="app-header">
     <div class="header-brand">
-      <img class="header-logo" src="./campogeo-logo.png?v=4.8" alt="CampoGeo" />
+      <img class="header-logo" src="./campogeo-logo.png?v=4.9" alt="CampoGeo" />
       <div class="header-brand-copy">
         <p class="eyebrow">CAMPOGEO</p>
         <h1>CampoGeo</h1>
@@ -69,7 +69,7 @@
         <div>
           <p class="eyebrow">OFFLINE • GPS</p>
           <h2>Mapas prontos para campo</h2>
-          <p class="muted">Abra, importe o mapa e use no campo.</p>
+          <p class="muted">Importe, gere e use offline no campo.</p>
         </div>
         <input id="pdfInput" type="file" accept="application/pdf" hidden />      </div>
 
@@ -79,16 +79,26 @@
             <p class="eyebrow">Biblioteca</p>
             <h3>Mapas</h3>
           </div>
-          <div class="top-actions app-tools app-tools-clean">
-            <button class="toolbar-button danger-soft reset-only" id="resetAllBtn" type="button"><span class="btn-icon">⌫</span><span>Resetar</span></button>
-            <label class="quality-picker">
-              <span>Qualidade</span>
+          <div class="top-actions app-tools app-tools-clean settings-row">
+            <label class="quality-picker quality-card">
+              <span class="quality-icon">◈</span>
+              <span class="quality-copy">
+                <strong>Qualidade</strong>
+                <small>Render do mapa</small>
+              </span>
               <select id="renderQualitySelect">
                 <option value="safe">Segura</option>
                 <option value="high" selected>Alta</option>
                 <option value="ultra">Ultra</option>
               </select>
             </label>
+            <button class="danger-action reset-only" id="resetAllBtn" type="button">
+              <span class="danger-icon">⌫</span>
+              <span>
+                <strong>Resetar</strong>
+                <small>Apagar dados</small>
+              </span>
+            </button>
           </div>
         </div>
 
@@ -108,18 +118,27 @@
         <div class="map-list" id="mapList"></div>
       </section>
       
-      <nav class="bottom-dock" aria-label="Ações rápidas">
+      <nav class="bottom-dock app-bottom-bar" aria-label="Ações rápidas">
         <button class="dock-action primary" id="dockImportBtn" type="button">
           <span class="dock-icon">＋</span>
-          <span>Importar</span>
+          <span class="dock-label">
+            <strong>Importar</strong>
+            <small>PDF</small>
+          </span>
         </button>
         <button class="dock-action" id="dockRefreshBtn" type="button">
           <span class="dock-icon">↻</span>
-          <span>Atualizar</span>
+          <span class="dock-label">
+            <strong>Atualizar</strong>
+            <small>Lista</small>
+          </span>
         </button>
         <button class="dock-action" id="dockCacheBtn" type="button">
           <span class="dock-icon">⚡</span>
-          <span>Cache</span>
+          <span class="dock-label">
+            <strong>Cache</strong>
+            <small>Offline</small>
+          </span>
         </button>
       </nav>
 

@@ -1,11 +1,11 @@
-/* CampoGeo V4.8 Offline reforçado
+/* CampoGeo V4.9 UI melhorada
    - Cria imagem/mapa em alta qualidade a partir do PDF
    - Salva offline no IndexedDB
    - GPS por cima do mapa controlado pelo app
    - Botão Localizar fixo
 */
 
-const DB_NAME = "campogeo-v4-8-db";
+const DB_NAME = "campogeo-v4-9-db";
 const DB_VERSION = 1;
 const MAP_STORE = "maps";
 const ASSET_STORE = "assets";
@@ -367,6 +367,7 @@ async function resetEverything() {
       "campogeo-v4-6-db",
       "campogeo-v4-7-db",
       "campogeo-v4-8-db",
+      "campogeo-v4-9-db",
     ];
 
     await Promise.all(dbs.map(deleteDatabaseSafe));
@@ -713,7 +714,7 @@ async function renderMapList() {
         ${realBadge}
       </div>
       <div class="card-actions">
-        <button class="primary-button" data-action="open">Abrir mapa</button>
+        <button class="primary-button" data-action="open">Abrir</button>
         <button class="ghost-button" data-action="prepare">${map.realMap?.blob ? "Regenerar" : "Gerar"}</button>
         <button class="danger-button" data-action="delete">Excluir</button>
       </div>
