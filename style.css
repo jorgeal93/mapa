@@ -2576,3 +2576,581 @@ body.app-loading {
     display: none;
   }
 }
+
+
+/* ===== CampoGeo V5.0 — Alfinete + KMZ ===== */
+
+.map-action-bar {
+  position: fixed;
+  left: 50%;
+  bottom: calc(86px + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  width: min(660px, calc(100% - 22px));
+  z-index: 88;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  padding: 8px;
+  border-radius: 26px;
+  background: linear-gradient(135deg, rgba(7,22,12,.92), rgba(8,28,15,.84));
+  border: 1px solid rgba(255,255,255,.12);
+  backdrop-filter: blur(18px);
+  box-shadow: 0 18px 42px rgba(0,0,0,.36), inset 0 1px 0 rgba(255,255,255,.08);
+}
+
+.map-tool-button {
+  min-height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 20px;
+  background: rgba(255,255,255,.075);
+  border: 1px solid rgba(255,255,255,.09);
+  color: #ecfff1;
+  font-weight: 950;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.055);
+}
+
+.map-tool-button.active {
+  background: linear-gradient(135deg, var(--primary), #7ef2aa);
+  color: #041109;
+  box-shadow: 0 14px 32px rgba(40,199,111,.28), inset 0 1px 0 rgba(255,255,255,.28);
+}
+
+.map-tool-icon {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 14px;
+  background: rgba(255,255,255,.13);
+  flex: 0 0 auto;
+}
+
+.map-tool-button.active .map-tool-icon {
+  background: rgba(0,0,0,.12);
+}
+
+.map-tool-label {
+  font-size: 12px;
+  line-height: 1.05;
+}
+
+.points-layer {
+  pointer-events: none;
+}
+
+.map-pin-marker {
+  position: absolute;
+  width: 34px;
+  height: 44px;
+  margin-left: -17px;
+  margin-top: -42px;
+  transform-origin: 50% 95%;
+  pointer-events: auto;
+  cursor: pointer;
+  filter: drop-shadow(0 10px 16px rgba(0,0,0,.38));
+}
+
+.map-pin-body {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: start center;
+}
+
+.map-pin-drop {
+  width: 30px;
+  height: 30px;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  background: linear-gradient(135deg, #ff415c, #ffb84d);
+  border: 2px solid rgba(255,255,255,.92);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.36);
+}
+
+.map-pin-dot {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  width: 9px;
+  height: 9px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: #fff8df;
+}
+
+.map-pin-name {
+  position: absolute;
+  left: 50%;
+  top: -25px;
+  transform: translateX(-50%);
+  max-width: 160px;
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: rgba(5,17,9,.86);
+  border: 1px solid rgba(255,255,255,.16);
+  color: #f4fff7;
+  font-size: 11px;
+  font-weight: 900;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  backdrop-filter: blur(10px);
+}
+
+.map-pin-coord {
+  display: none;
+}
+
+.map-wrapper.pin-mode {
+  cursor: crosshair;
+}
+
+.map-wrapper.pin-mode::after {
+  content: "Toque no mapa para marcar";
+  position: absolute;
+  left: 50%;
+  top: 12px;
+  transform: translateX(-50%);
+  z-index: 12;
+  padding: 9px 12px;
+  border-radius: 999px;
+  background: rgba(5,17,9,.84);
+  border: 1px solid rgba(40,199,111,.22);
+  color: #dcffe8;
+  font-weight: 900;
+  font-size: 12px;
+  pointer-events: none;
+  box-shadow: 0 12px 28px rgba(0,0,0,.24);
+}
+
+@media (max-width: 720px) {
+  .map-action-bar {
+    bottom: calc(84px + env(safe-area-inset-bottom));
+    width: calc(100% - 18px);
+    gap: 6px;
+    padding: 7px;
+    border-radius: 24px;
+  }
+
+  .map-tool-button {
+    min-height: 52px;
+    flex-direction: column;
+    gap: 3px;
+    border-radius: 18px;
+  }
+
+  .map-tool-icon {
+    width: 27px;
+    height: 27px;
+    border-radius: 12px;
+    font-size: 14px;
+  }
+
+  .map-tool-label {
+    font-size: 10px;
+    text-align: center;
+  }
+
+  .locate-button {
+    bottom: calc(150px + env(safe-area-inset-bottom)) !important;
+  }
+}
+
+@media (max-width: 390px) {
+  .map-tool-label {
+    font-size: 9px;
+  }
+
+  .map-action-bar {
+    bottom: calc(78px + env(safe-area-inset-bottom));
+  }
+}
+
+
+/* ===== CampoGeo V5.1 — Marcadores menores + limpar todos ===== */
+
+/* Agora a barra tem 4 funções */
+.map-action-bar {
+  grid-template-columns: 1fr 1fr 1fr 1fr !important;
+}
+
+/* Botão Limpar com alerta visual */
+.map-tool-button.danger-tool {
+  background: rgba(255,93,108,.12);
+  border-color: rgba(255,93,108,.22);
+  color: #ffe7ea;
+}
+
+.map-tool-button.danger-tool .map-tool-icon {
+  background: rgba(255,93,108,.16);
+}
+
+/* Marcadores menores para usar muitos pontos sem poluir o mapa */
+.map-pin-marker {
+  width: 22px !important;
+  height: 30px !important;
+  margin-left: -11px !important;
+  margin-top: -29px !important;
+  filter: drop-shadow(0 6px 9px rgba(0,0,0,.35)) !important;
+}
+
+.map-pin-drop {
+  width: 20px !important;
+  height: 20px !important;
+  border-width: 1.5px !important;
+}
+
+.map-pin-dot {
+  top: 5px !important;
+  width: 5px !important;
+  height: 5px !important;
+}
+
+/* Esconde o nome para não encher o mapa.
+   O nome aparece ao tocar/segurar, focar ou passar o mouse. */
+.map-pin-name {
+  display: block !important;
+  opacity: 0;
+  transform: translateX(-50%) translateY(4px) scale(.92) !important;
+  top: -24px !important;
+  max-width: 118px !important;
+  padding: 4px 7px !important;
+  font-size: 10px !important;
+  transition: opacity .18s ease, transform .18s ease;
+  pointer-events: none;
+}
+
+.map-pin-marker:hover .map-pin-name,
+.map-pin-marker:focus-visible .map-pin-name,
+.map-pin-marker:active .map-pin-name {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0) scale(1) !important;
+}
+
+@media (max-width: 720px) {
+  .map-action-bar {
+    grid-template-columns: repeat(4, 1fr) !important;
+    bottom: calc(78px + env(safe-area-inset-bottom)) !important;
+    gap: 5px !important;
+    padding: 6px !important;
+  }
+
+  .map-tool-button {
+    min-height: 50px !important;
+    border-radius: 17px !important;
+  }
+
+  .map-tool-label {
+    font-size: 9px !important;
+  }
+
+  .map-tool-icon {
+    width: 25px !important;
+    height: 25px !important;
+    border-radius: 11px !important;
+  }
+
+  .locate-button {
+    bottom: calc(142px + env(safe-area-inset-bottom)) !important;
+  }
+
+  .map-pin-marker {
+    width: 20px !important;
+    height: 27px !important;
+    margin-left: -10px !important;
+    margin-top: -26px !important;
+  }
+
+  .map-pin-drop {
+    width: 18px !important;
+    height: 18px !important;
+  }
+
+  .map-pin-dot {
+    top: 5px !important;
+    width: 4.5px !important;
+    height: 4.5px !important;
+  }
+}
+
+@media (max-width: 390px) {
+  .map-tool-label {
+    font-size: 8px !important;
+  }
+}
+
+
+/* ===== CampoGeo V5.2 — Marcadores limpos sem fundo branco ===== */
+
+/* Resolve o branco: remove totalmente aparência de botão do marcador */
+.map-pin-marker {
+  width: 18px !important;
+  height: 18px !important;
+  margin-left: -9px !important;
+  margin-top: -9px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  outline: 0 !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  overflow: visible !important;
+  filter: none !important;
+  display: block !important;
+}
+
+/* troca o alfinete grande por um ponto de campo discreto */
+.map-pin-body {
+  position: absolute !important;
+  inset: 0 !important;
+  display: grid !important;
+  place-items: center !important;
+  width: 18px !important;
+  height: 18px !important;
+  background: transparent !important;
+  pointer-events: none !important;
+}
+
+.map-pin-drop {
+  display: block !important;
+  width: 11px !important;
+  height: 11px !important;
+  border-radius: 999px !important;
+  transform: none !important;
+  background: #ff4d5f !important;
+  border: 2px solid #ffffff !important;
+  box-shadow:
+    0 0 0 2px rgba(255,77,95,.28),
+    0 2px 6px rgba(0,0,0,.38) !important;
+}
+
+.map-pin-dot {
+  display: none !important;
+}
+
+/* Só mostra nome ao tocar/passar por cima; sem caixa branca */
+.map-pin-name {
+  opacity: 0 !important;
+  top: -28px !important;
+  max-width: 130px !important;
+  padding: 5px 8px !important;
+  border-radius: 999px !important;
+  background: rgba(5,17,9,.92) !important;
+  border: 1px solid rgba(40,199,111,.26) !important;
+  color: #eaffef !important;
+  font-size: 10px !important;
+  font-weight: 950 !important;
+  white-space: nowrap !important;
+  box-shadow: 0 10px 22px rgba(0,0,0,.28) !important;
+  backdrop-filter: blur(10px) !important;
+}
+
+.map-pin-marker:hover .map-pin-name,
+.map-pin-marker:focus-visible .map-pin-name,
+.map-pin-marker:active .map-pin-name,
+.map-pin-marker.show-label .map-pin-name {
+  opacity: 1 !important;
+}
+
+/* Botão limpar mais destacado e com clique garantido */
+.map-action-bar {
+  pointer-events: auto !important;
+  z-index: 140 !important;
+}
+
+.map-tool-button {
+  pointer-events: auto !important;
+  position: relative !important;
+  z-index: 141 !important;
+}
+
+.map-tool-button.danger-tool {
+  background: linear-gradient(135deg, rgba(255,93,108,.22), rgba(255,255,255,.06)) !important;
+  border-color: rgba(255,93,108,.36) !important;
+  color: #fff0f2 !important;
+}
+
+.map-tool-button.danger-tool:active {
+  scale: .985;
+}
+
+/* ajuste mobile */
+@media (max-width: 720px) {
+  .map-pin-marker {
+    width: 16px !important;
+    height: 16px !important;
+    margin-left: -8px !important;
+    margin-top: -8px !important;
+  }
+
+  .map-pin-body {
+    width: 16px !important;
+    height: 16px !important;
+  }
+
+  .map-pin-drop {
+    width: 10px !important;
+    height: 10px !important;
+    border-width: 2px !important;
+  }
+}
+
+
+/* ===== CampoGeo V5.2.1 — Garantia anti-fundo branco ===== */
+button.map-pin-marker,
+.map-pin-marker,
+.map-pin-marker * {
+  -webkit-tap-highlight-color: transparent !important;
+}
+
+button.map-pin-marker {
+  background: none !important;
+  background-color: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  color: inherit !important;
+}
+
+button.map-pin-marker:focus,
+button.map-pin-marker:active {
+  background: transparent !important;
+  outline: none !important;
+}
+
+
+/* ===== CampoGeo V5.3 — Escolher cor do alfinete ===== */
+
+.map-action-bar.has-color-picker {
+  grid-template-columns: repeat(4, 1fr) !important;
+  gap: 7px !important;
+}
+
+.pin-color-picker {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 42px;
+  padding: 7px 9px;
+  border-radius: 20px;
+  background: rgba(255,255,255,.065);
+  border: 1px solid rgba(255,255,255,.09);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.055);
+}
+
+.pin-color-title {
+  color: #dfffea;
+  font-size: 11px;
+  font-weight: 950;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  margin-right: 2px;
+}
+
+.pin-color-dot {
+  width: 25px;
+  height: 25px;
+  min-width: 25px;
+  min-height: 25px;
+  border-radius: 999px;
+  border: 2px solid rgba(255,255,255,.34);
+  background: var(--dot-color, #ff4d5f);
+  box-shadow: 0 5px 12px rgba(0,0,0,.25);
+  cursor: pointer;
+  padding: 0;
+}
+
+.pin-color-dot[data-pin-color="#ff4d5f"] { --dot-color: #ff4d5f; }
+.pin-color-dot[data-pin-color="#28c76f"] { --dot-color: #28c76f; }
+.pin-color-dot[data-pin-color="#2f80ed"] { --dot-color: #2f80ed; }
+.pin-color-dot[data-pin-color="#ffd166"] { --dot-color: #ffd166; }
+.pin-color-dot[data-pin-color="#a855f7"] { --dot-color: #a855f7; }
+.pin-color-dot[data-pin-color="#ff8a00"] { --dot-color: #ff8a00; }
+
+.pin-color-dot.active {
+  border-color: #ffffff;
+  box-shadow:
+    0 0 0 3px rgba(255,255,255,.12),
+    0 0 0 6px color-mix(in srgb, var(--dot-color) 26%, transparent),
+    0 8px 18px rgba(0,0,0,.30);
+  transform: translateY(-1px);
+}
+
+/* O ponto usa a cor escolhida */
+.map-pin-drop {
+  background: var(--pin-color, #ff4d5f) !important;
+  box-shadow:
+    0 0 0 2px var(--pin-ring, rgba(255,77,95,.28)),
+    0 2px 6px rgba(0,0,0,.38) !important;
+}
+
+.map-pin-name {
+  border-color: var(--pin-border, rgba(40,199,111,.26)) !important;
+}
+
+/* O botão Alfinete mostra a cor ativa em um mini ponto */
+#pinModeBtn .map-tool-icon {
+  position: relative;
+}
+
+#pinModeBtn .map-tool-icon::after {
+  content: "";
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--selected-pin-color, #ff4d5f);
+  border: 2px solid rgba(5,17,9,.95);
+  box-shadow: 0 2px 6px rgba(0,0,0,.30);
+}
+
+@media (max-width: 720px) {
+  .pin-color-picker {
+    min-height: 38px;
+    gap: 6px;
+    padding: 6px 7px;
+    border-radius: 18px;
+  }
+
+  .pin-color-title {
+    font-size: 10px;
+  }
+
+  .pin-color-dot {
+    width: 22px;
+    height: 22px;
+    min-width: 22px;
+    min-height: 22px;
+  }
+
+  .map-action-bar.has-color-picker {
+    bottom: calc(76px + env(safe-area-inset-bottom)) !important;
+  }
+
+  .locate-button {
+    bottom: calc(182px + env(safe-area-inset-bottom)) !important;
+  }
+}
+
+@media (max-width: 390px) {
+  .pin-color-picker {
+    gap: 5px;
+  }
+
+  .pin-color-dot {
+    width: 20px;
+    height: 20px;
+    min-width: 20px;
+    min-height: 20px;
+  }
+}

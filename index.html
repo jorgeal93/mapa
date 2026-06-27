@@ -11,15 +11,15 @@
   <meta name="description" content="CampoGeo - mapas offline com GPS para campo." />
   <title>CampoGeo</title>
   <link rel="manifest" href="./manifest.json" />
-  <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png?v=4.9" />
-  <link rel="apple-touch-icon" href="./apple-touch-icon.png?v=4.9" />
+  <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png?v=5.3" />
+  <link rel="apple-touch-icon" href="./apple-touch-icon.png?v=5.3" />
   <link rel="stylesheet" href="./style.css" />
 </head>
 
 <body class="mobile-ready app-loading">
   <div class="splash-screen" id="splashScreen">
     <div class="splash-card">
-      <img class="splash-logo" src="./campogeo-logo.png?v=4.9" alt="CampoGeo" />
+      <img class="splash-logo" src="./campogeo-logo.png?v=5.3" alt="CampoGeo" />
       <div class="splash-copy">
         <strong>CampoGeo</strong>
         <span>Mapas offline para campo</span>
@@ -30,7 +30,7 @@
 
   <header class="app-header">
     <div class="header-brand">
-      <img class="header-logo" src="./campogeo-logo.png?v=4.9" alt="CampoGeo" />
+      <img class="header-logo" src="./campogeo-logo.png?v=5.3" alt="CampoGeo" />
       <div class="header-brand-copy">
         <p class="eyebrow">CAMPOGEO</p>
         <h1>CampoGeo</h1>
@@ -163,6 +163,36 @@
       </div>
 
       <button class="locate-button" id="locateBtn" type="button"><span class="locate-dot">⌖</span><span>Localizar</span></button>
+
+      <input id="kmzInput" type="file" accept=".kmz,.kml,application/vnd.google-earth.kmz+xml,application/vnd.google-earth.kml+xml" hidden />
+
+      <div class="map-action-bar has-color-picker" aria-label="Ferramentas do mapa">
+        <div class="pin-color-picker" id="pinColorPicker" aria-label="Cor do alfinete">
+          <span class="pin-color-title">Cor</span>
+          <button class="pin-color-dot active" type="button" data-pin-color="#ff4d5f" aria-label="Vermelho" title="Vermelho"></button>
+          <button class="pin-color-dot" type="button" data-pin-color="#28c76f" aria-label="Verde" title="Verde"></button>
+          <button class="pin-color-dot" type="button" data-pin-color="#2f80ed" aria-label="Azul" title="Azul"></button>
+          <button class="pin-color-dot" type="button" data-pin-color="#ffd166" aria-label="Amarelo" title="Amarelo"></button>
+          <button class="pin-color-dot" type="button" data-pin-color="#a855f7" aria-label="Roxo" title="Roxo"></button>
+          <button class="pin-color-dot" type="button" data-pin-color="#ff8a00" aria-label="Laranja" title="Laranja"></button>
+        </div>
+        <button class="map-tool-button" id="pinModeBtn" type="button">
+          <span class="map-tool-icon">📍</span>
+          <span class="map-tool-label">Alfinete</span>
+        </button>
+        <button class="map-tool-button" id="importKmzBtn" type="button">
+          <span class="map-tool-icon">⇪</span>
+          <span class="map-tool-label">Importar KMZ</span>
+        </button>
+        <button class="map-tool-button" id="exportKmzBtn" type="button">
+          <span class="map-tool-icon">⇩</span>
+          <span class="map-tool-label">Exportar KMZ</span>
+        </button>
+        <button class="map-tool-button danger-tool" id="clearPinsBtn" type="button">
+          <span class="map-tool-icon">🧹</span>
+          <span class="map-tool-label">Limpar</span>
+        </button>
+      </div>
     </section>
   </main>
 

@@ -1,4 +1,4 @@
-const CACHE_NAME = "campogeo-v4-9-ui-melhorada";
+const CACHE_NAME = "campogeo-v5-3-cor-alfinete";
 const APP_SHELL = [
   "./",
   "./index.html",

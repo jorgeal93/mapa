@@ -1,7 +1,7 @@
 {
   "name": "CampoGeo",
   "short_name": "CampoGeo",
-  "description": "CampoGeo - mapas offline com interface melhorada.",
+  "description": "CampoGeo - mapas offline com alfinetes coloridos e KMZ.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

@@ -1,20 +1,24 @@
-# CampoGeo V4.9 — UI melhorada
+# CampoGeo V5.3 — Escolher cor do alfinete
 
-Melhorias visuais:
-- Barra inferior mais bonita e mais fácil de tocar.
-- Cada função ficou mais clara:
-  - Importar PDF
-  - Atualizar lista
-  - Cache offline
-  - Qualidade do render
-  - Resetar dados
-- Cards dos mapas mais organizados.
-- Botões Abrir / Gerar / Excluir ficaram mais fáceis de entender.
-- Mantido o modo offline reforçado da V4.8.
-- Mantida a renderização Segura / Alta / Ultra.
+Novidades:
+- Seletor de cor dentro do mapa.
+- Escolha a cor antes de tocar no mapa.
+- Cada alfinete salva a própria cor.
+- Cores disponíveis:
+  - vermelho
+  - verde
+  - azul
+  - amarelo
+  - roxo
+  - laranja
+- Exportar KMZ leva a cor do ponto.
+- Importar KMZ/KML do CampoGeo tenta manter a cor.
+- Marcadores continuam pequenos e sem fundo branco.
+- Botão Limpar mantido.
 
-Sem duplicação:
-- Importar aparece uma vez.
-- Atualizar aparece uma vez.
-- Cache aparece uma vez.
-- Resetar aparece uma vez.
+Como usar:
+1. Abra o mapa.
+2. Escolha uma cor na barra de cores.
+3. Aperte Alfinete.
+4. Toque no mapa.
+5. Dê um nome ao ponto.

@@ -1,11 +1,11 @@
-/* CampoGeo V4.9 UI melhorada
+/* CampoGeo V5.3 Cor do alfinete
    - Cria imagem/mapa em alta qualidade a partir do PDF
    - Salva offline no IndexedDB
    - GPS por cima do mapa controlado pelo app
    - Botão Localizar fixo
 */
 
-const DB_NAME = "campogeo-v4-9-db";
+const DB_NAME = "campogeo-v4-9-db"; // mantém banco para não perder mapas salvos
 const DB_VERSION = 1;
 const MAP_STORE = "maps";
 const ASSET_STORE = "assets";
@@ -81,6 +81,12 @@ const ui = {
   pointsLayer: $("#pointsLayer"),
   gpsLayer: $("#gpsLayer"),
   locateBtn: $("#locateBtn"),
+  pinModeBtn: $("#pinModeBtn"),
+  importKmzBtn: $("#importKmzBtn"),
+  exportKmzBtn: $("#exportKmzBtn"),
+  clearPinsBtn: $("#clearPinsBtn"),
+  pinColorPicker: $("#pinColorPicker"),
+  kmzInput: $("#kmzInput"),
 
   progressOverlay: $("#progressOverlay"),
   progressTitle: $("#progressTitle"),
@@ -126,6 +132,9 @@ let lastLocateTapAt = 0;
 let cancelRenderRequested = false;
 let activeRenderTask = null;
 let explicitGenerateAllowed = false;
+let pinMode = false;
+let selectedPinColor = "#ff4d5f";
+let mousePinCandidate = null;
 const splashStartedAt = Date.now();
 
 
@@ -241,8 +250,15 @@ function bindEventsOnce() {
   bindOnce(ui.backBtn, "click", actionBackHome);
   bindOnce(ui.cancelProgressBtn, "click", cancelCurrentRender);
   bindOnce(ui.locateBtn, "click", actionLocate);
+  bindOnce(ui.pinModeBtn, "click", actionTogglePinMode);
+  bindOnce(ui.importKmzBtn, "click", actionOpenKmzImporter);
+  bindOnce(ui.exportKmzBtn, "click", actionExportKmz);
+  bindOnce(ui.clearPinsBtn, "click", actionClearAllPins);
+  bindOnce(ui.kmzInput, "change", handleKmzImport);
+  bindOnce(ui.pinColorPicker, "click", handlePinColorChoice);
 
   bindMapGesturesOnce();
+  bindOnce(ui.mapScreen, "click", handleMapToolButtonClick, true);
 
   // Mantém acesso manual pelo console, sem depender de onclick no HTML.
   window.CampoGeo = {
@@ -251,6 +267,11 @@ function bindEventsOnce() {
     clearCache: actionClearCache,
     locate: actionLocate,
     importPdf: actionOpenImporter,
+    addPin: actionTogglePinMode,
+    exportKmz: actionExportKmz,
+    importKmz: actionOpenKmzImporter,
+    clearPins: actionClearAllPins,
+    setPinColor: (color) => { selectedPinColor = normalizePinColor(color) || selectedPinColor; updatePinColorUi(); },
   };
 }
 
@@ -276,11 +297,75 @@ function bindMapGesturesOnce() {
   wrapper.addEventListener("pointerup", handlePointerUp);
   wrapper.addEventListener("pointercancel", handlePointerUp);
   wrapper.addEventListener("wheel", handleMapWheel, { passive: false });
+  wrapper.addEventListener("click", handleMapClickForPin);
 }
 
 function handleMapWheel(event) {
   event.preventDefault();
   setZoom(zoom + (event.deltaY < 0 ? 0.22 : -0.22), event.clientX, event.clientY);
+}
+
+
+
+function handlePinColorChoice(event) {
+  const button = event.target.closest?.("[data-pin-color]");
+  if (!button) return;
+
+  event.preventDefault();
+  event.stopPropagation();
+
+  const color = normalizePinColor(button.dataset.pinColor);
+  if (!color) return;
+
+  selectedPinColor = color;
+  updatePinColorUi();
+  showToast("Cor do alfinete selecionada.");
+}
+
+function updatePinColorUi() {
+  ui.pinColorPicker?.querySelectorAll("[data-pin-color]").forEach((button) => {
+    button.classList.toggle("active", normalizePinColor(button.dataset.pinColor) === selectedPinColor);
+  });
+
+  document.documentElement.style.setProperty("--selected-pin-color", selectedPinColor);
+}
+
+function normalizePinColor(value) {
+  const color = String(value || "").trim().toLowerCase();
+  return /^#[0-9a-f]{6}$/.test(color) ? color : null;
+}
+
+function hexToRgb(hex) {
+  const value = normalizePinColor(hex) || "#ff4d5f";
+  return {
+    r: parseInt(value.slice(1, 3), 16),
+    g: parseInt(value.slice(3, 5), 16),
+    b: parseInt(value.slice(5, 7), 16),
+  };
+}
+
+function colorToRing(color) {
+  const rgb = hexToRgb(color || "#ff4d5f");
+  return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, .28)`;
+}
+
+function pinColorToKmlColor(hex) {
+  // KML usa AABBGGRR
+  const rgb = hexToRgb(hex || "#ff4d5f");
+  return `ff${rgb.b.toString(16).padStart(2, "0")}${rgb.g.toString(16).padStart(2, "0")}${rgb.r.toString(16).padStart(2, "0")}`;
+}
+
+function handleMapToolButtonClick(event) {
+  const button = event.target.closest?.(".map-tool-button");
+  if (!button) return;
+
+  event.preventDefault();
+  event.stopPropagation();
+
+  if (button.id === "pinModeBtn") return actionTogglePinMode();
+  if (button.id === "importKmzBtn") return actionOpenKmzImporter();
+  if (button.id === "exportKmzBtn") return actionExportKmz();
+  if (button.id === "clearPinsBtn") return actionClearAllPins();
 }
 
 function actionOpenImporter() {
@@ -311,12 +396,72 @@ async function actionBackHome() {
   ui.mapScreen.classList.remove("active");
   ui.homeScreen.classList.add("active");
   cleanupCurrentMap();
+  pinMode = false;
+  ui.pinModeBtn?.classList.remove("active");
+  ui.mapWrapper?.classList.remove("pin-mode");
   await renderMapList();
 }
 
 function actionLocate() {
   flashButton("locateBtn");
   handleLocateClick();
+}
+
+function actionTogglePinMode() {
+  if (!currentMap) {
+    showToast("Abra um mapa primeiro.");
+    return;
+  }
+
+  pinMode = !pinMode;
+  ui.pinModeBtn?.classList.toggle("active", pinMode);
+  ui.mapWrapper?.classList.toggle("pin-mode", pinMode);
+  showToast(pinMode ? "Alfinete ligado: toque no mapa." : "Alfinete desligado.");
+}
+
+function actionOpenKmzImporter() {
+  if (!currentMap) {
+    showToast("Abra um mapa primeiro.");
+    return;
+  }
+  ui.kmzInput?.click();
+}
+
+function actionExportKmz() {
+  exportCurrentMapPinsAsKmz().catch((error) => {
+    console.error(error);
+    showToast(error.message || "Não consegui exportar KMZ.");
+  });
+}
+
+
+async function actionClearAllPins() {
+  if (!currentMap) {
+    showToast("Abra um mapa primeiro.");
+    return;
+  }
+
+  currentMap.pins = Array.isArray(currentMap.pins) ? currentMap.pins : [];
+  const total = currentMap.pins.length;
+
+  if (!total) {
+    showToast("Não tem marcadores para apagar.");
+    return;
+  }
+
+  const ok = confirm(`Apagar todos os ${total} marcadores deste mapa?\n\nIsso não apaga o PDF, só os alfinetes.`);
+  if (!ok) return;
+
+  currentMap.pins.length = 0;
+
+  try {
+    await saveCurrentMapPins();
+    renderPins();
+    showToast("Todos os marcadores foram apagados.");
+  } catch (error) {
+    console.error(error);
+    showToast("Erro ao apagar marcadores.");
+  }
 }
 
 function flashButton(id) {
@@ -1022,6 +1167,8 @@ async function loadRealMapImage(map) {
   ui.pointsLayer.style.height = `${imageNaturalSize.height}px`;
   ui.gpsLayer.style.width = `${imageNaturalSize.width}px`;
   ui.gpsLayer.style.height = `${imageNaturalSize.height}px`;
+
+  renderPins();
 }
 
 function fitMapToScreen() {
@@ -1052,6 +1199,9 @@ function cleanupCurrentMap() {
   ui.mapImage.removeAttribute("src");
   ui.gpsLayer.innerHTML = "";
   ui.pointsLayer.innerHTML = "";
+  pinMode = false;
+  ui.pinModeBtn?.classList.remove("active");
+  ui.mapWrapper?.classList.remove("pin-mode");
   imageNaturalSize = { width: 0, height: 0 };
   displaySize = { width: 0, height: 0 };
   zoom = 1;
@@ -1086,7 +1236,7 @@ function setZoom(value, centerClientX = null, centerClientY = null) {
 
 function applyTransform() {
   ui.mapStage.style.transform = `translate3d(${translate.x}px, ${translate.y}px, 0) scale(${zoom})`;
-  updateGpsMarkerScale();
+  updateOverlayMarkerScale();
 }
 
 function handleTouchStart(event) {
@@ -1160,9 +1310,16 @@ function handleTouchEnd(event) {
 
   if (event.touches.length > 0) return;
 
+  const wasTap = pinMode && touchMode === "pan" && !touchMoved;
+  const changed = event.changedTouches?.[0];
+
   touchActive = false;
   touchMode = "none";
   touchMoved = false;
+
+  if (wasTap && changed) {
+    addPinAtClientPoint(changed.clientX, changed.clientY);
+  }
 }
 
 function getTouchPoints(event) {
@@ -1182,6 +1339,8 @@ function midpoint(a, b) {
 
 function handlePointerDown(event) {
   if (!currentMap || event.pointerType === "touch") return;
+  if (event.target.closest?.(".map-pin-marker")) return;
+  mousePinCandidate = { x: event.clientX, y: event.clientY, moved: false };
   ui.mapWrapper.setPointerCapture(event.pointerId);
   isDragging = true;
   dragStart = { x: event.clientX, y: event.clientY };
@@ -1190,6 +1349,11 @@ function handlePointerDown(event) {
 
 function handlePointerMove(event) {
   if (!currentMap || event.pointerType === "touch" || !isDragging) return;
+
+  if (mousePinCandidate && Math.hypot(event.clientX - mousePinCandidate.x, event.clientY - mousePinCandidate.y) > 5) {
+    mousePinCandidate.moved = true;
+  }
+
   translate = {
     x: translateStart.x + event.clientX - dragStart.x,
     y: translateStart.y + event.clientY - dragStart.y,
@@ -1200,6 +1364,521 @@ function handlePointerMove(event) {
 function handlePointerUp(event) {
   if (event.pointerType === "touch") return;
   isDragging = false;
+  setTimeout(() => { mousePinCandidate = null; }, 0);
+}
+
+
+function handleMapClickForPin(event) {
+  if (!pinMode || !currentMap) return;
+  if (event.target.closest?.(".map-pin-marker, .locate-button, .map-action-bar, .map-tool-button, .map-topbar")) return;
+  if (mousePinCandidate?.moved) return;
+
+  event.preventDefault();
+  event.stopPropagation();
+  addPinAtClientPoint(event.clientX, event.clientY);
+}
+
+async function addPinAtClientPoint(clientX, clientY) {
+  if (!currentMap) return;
+
+  const point = clientToMapPixel(clientX, clientY);
+  if (!point?.inside) {
+    showToast("Toque dentro do mapa.");
+    return;
+  }
+
+  const nextNumber = (currentMap.pins?.length || 0) + 1;
+  const name = prompt("Nome do alfinete:", `Ponto ${nextNumber}`);
+  if (name === null) return;
+
+  const geo = mapPixelToGeo(point.x, point.y);
+  const pin = {
+    id: randomId(),
+    name: String(name || `Ponto ${nextNumber}`).trim() || `Ponto ${nextNumber}`,
+    x: point.x,
+    y: point.y,
+    lat: geo?.lat ?? null,
+    lon: geo?.lon ?? null,
+    color: selectedPinColor,
+    source: "manual",
+    createdAt: new Date().toISOString(),
+  };
+
+  currentMap.pins = Array.isArray(currentMap.pins) ? currentMap.pins : [];
+  currentMap.pins.push(pin);
+  await saveCurrentMapPins();
+  renderPins();
+
+  showToast(geo ? "Alfinete salvo com coordenada." : "Alfinete salvo. KMZ precisa de GeoPDF.");
+}
+
+function clientToMapPixel(clientX, clientY) {
+  if (!currentMap || !imageNaturalSize.width) return null;
+
+  const rect = ui.mapWrapper.getBoundingClientRect();
+  const localX = clientX - rect.left;
+  const localY = clientY - rect.top;
+
+  const x = (localX - translate.x) / zoom;
+  const y = (localY - translate.y) / zoom;
+
+  return {
+    x,
+    y,
+    inside: x >= 0 && y >= 0 && x <= imageNaturalSize.width && y <= imageNaturalSize.height,
+  };
+}
+
+async function saveCurrentMapPins() {
+  if (!currentMap) return;
+  currentMap.updatedAt = new Date().toISOString();
+  await put(MAP_STORE, currentMap);
+}
+
+function renderPins() {
+  if (!ui.pointsLayer) return;
+  ui.pointsLayer.innerHTML = "";
+
+  const pins = Array.isArray(currentMap?.pins) ? currentMap.pins : [];
+  for (const pin of pins) {
+    if (!Number.isFinite(Number(pin.x)) || !Number.isFinite(Number(pin.y))) continue;
+
+    const marker = document.createElement("button");
+    marker.className = "map-pin-marker";
+    marker.type = "button";
+    marker.title = pin.lat && pin.lon
+      ? `${pin.name} • ${formatLatLon(pin.lat, pin.lon)}`
+      : `${pin.name}`;
+    const color = normalizePinColor(pin.color) || "#ff4d5f";
+    marker.style.left = `${pin.x}px`;
+    marker.style.top = `${pin.y}px`;
+    marker.style.setProperty("--pin-color", color);
+    marker.style.setProperty("--pin-ring", colorToRing(color));
+    marker.style.setProperty("--pin-border", colorToRing(color));
+    marker.innerHTML = `
+      <span class="map-pin-name">${escapeHtml(pin.name || "Ponto")}</span>
+      <span class="map-pin-body" aria-hidden="true">
+        <span class="map-pin-drop"></span>
+      </span>
+    `;
+
+    marker.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      handlePinClick(pin.id);
+    });
+
+    ui.pointsLayer.appendChild(marker);
+  }
+
+  updateOverlayMarkerScale();
+}
+
+async function handlePinClick(pinId) {
+  const pin = (currentMap.pins || []).find((item) => item.id === pinId);
+  if (!pin) return;
+
+  const coord = pin.lat && pin.lon ? `\n${formatLatLon(pin.lat, pin.lon)}` : "\nSem coordenada GeoPDF.";
+  const ok = confirm(`Alfinete: ${pin.name}${coord}\n\nApagar este alfinete?`);
+  if (!ok) return;
+
+  currentMap.pins = (currentMap.pins || []).filter((item) => item.id !== pinId);
+  await saveCurrentMapPins();
+  renderPins();
+  showToast("Alfinete apagado.");
+}
+
+function mapPixelToGeo(x, y) {
+  if (!currentMap?.georef?.views?.length || !currentMap.realMap) return null;
+
+  const candidates = [];
+
+  for (const view of currentMap.georef.views) {
+    const scale = currentMap.realMap.scale || 1;
+    const pageHeightAtScale = view.pageHeight ? view.pageHeight * scale : currentMap.realMap.height;
+
+    const pdfX = Number(x) / scale;
+    const pdfY = (pageHeightAtScale - Number(y)) / scale;
+
+    const bbox = view.bbox;
+    const u = (pdfX - bbox[0]) / (bbox[2] - bbox[0]);
+    const v = (pdfY - bbox[1]) / (bbox[3] - bbox[1]);
+
+    const tolerance = 0.015;
+    const inside = u >= -tolerance && u <= 1 + tolerance && v >= -tolerance && v <= 1 + tolerance;
+    if (!inside) continue;
+
+    const inv = invertHomography(view.h);
+    if (!inv) continue;
+
+    const geo = applyHomography(inv, u, v);
+    if (!geo) continue;
+
+    candidates.push({
+      lat: geo.v,
+      lon: geo.u,
+      view,
+    });
+  }
+
+  if (!candidates.length) return null;
+  candidates.sort((a, b) => b.view.area - a.view.area);
+
+  const best = candidates[0];
+  if (!Number.isFinite(best.lat) || !Number.isFinite(best.lon)) return null;
+
+  return {
+    lat: best.lat,
+    lon: best.lon,
+  };
+}
+
+function invertHomography(h) {
+  if (!Array.isArray(h) || h.length < 9) return null;
+
+  const [a,b,c,d,e,f,g,i,j] = h;
+  const det =
+    a * (e * j - f * i) -
+    b * (d * j - f * g) +
+    c * (d * i - e * g);
+
+  if (!Number.isFinite(det) || Math.abs(det) < 1e-12) return null;
+
+  return [
+    (e * j - f * i) / det,
+    (c * i - b * j) / det,
+    (b * f - c * e) / det,
+    (f * g - d * j) / det,
+    (a * j - c * g) / det,
+    (c * d - a * f) / det,
+    (d * i - e * g) / det,
+    (b * g - a * i) / det,
+    (a * e - b * d) / det,
+  ];
+}
+
+async function handleKmzImport(event) {
+  const file = event.target.files?.[0];
+  if (!file || !currentMap) return;
+
+  try {
+    const text = file.name.toLowerCase().endsWith(".kml")
+      ? await file.text()
+      : await extractKmlFromKmz(await file.arrayBuffer());
+
+    const placemarks = parseKmlPlacemarks(text);
+    if (!placemarks.length) {
+      showToast("Não encontrei marcações no KMZ/KML.");
+      return;
+    }
+
+    const imported = [];
+
+    for (const item of placemarks) {
+      let point = null;
+
+      if (Number.isFinite(item.lat) && Number.isFinite(item.lon) && currentMap.georef?.views?.length) {
+        const mapped = geoToMapPixel(item.lat, item.lon);
+        if (mapped?.inside) {
+          point = { x: mapped.x, y: mapped.y, lat: item.lat, lon: item.lon };
+        }
+      }
+
+      if (!point && Number.isFinite(item.x) && Number.isFinite(item.y)) {
+        point = {
+          x: item.x,
+          y: item.y,
+          ...mapPixelToGeo(item.x, item.y),
+        };
+      }
+
+      if (!point) continue;
+
+      imported.push({
+        id: randomId(),
+        name: item.name || `KMZ ${imported.length + 1}`,
+        x: point.x,
+        y: point.y,
+        lat: point.lat ?? item.lat ?? null,
+        lon: point.lon ?? item.lon ?? null,
+        color: item.color || selectedPinColor,
+        source: "kmz",
+        createdAt: new Date().toISOString(),
+      });
+    }
+
+    if (!imported.length) {
+      showToast("Nenhum ponto caiu dentro deste mapa.");
+      return;
+    }
+
+    currentMap.pins = Array.isArray(currentMap.pins) ? currentMap.pins : [];
+    currentMap.pins.push(...imported);
+    await saveCurrentMapPins();
+    renderPins();
+    showToast(`${imported.length} marcação(ões) importada(s).`);
+  } catch (error) {
+    console.error(error);
+    showToast(error.message || "Não consegui importar KMZ.");
+  } finally {
+    event.target.value = "";
+  }
+}
+
+async function exportCurrentMapPinsAsKmz() {
+  if (!currentMap) {
+    showToast("Abra um mapa primeiro.");
+    return;
+  }
+
+  const pins = (currentMap.pins || []).filter((pin) => Number.isFinite(Number(pin.lat)) && Number.isFinite(Number(pin.lon)));
+  if (!pins.length) {
+    throw new Error("Nenhum alfinete com coordenada. Para KMZ, use um GeoPDF ou importe pontos com latitude/longitude.");
+  }
+
+  const kml = buildKmlForPins(currentMap, pins);
+  const kmzBlob = createKmzBlob(kml, "doc.kml");
+  const safeName = sanitizeFilename((currentMap.name || "campogeo").replace(/\.pdf$/i, ""));
+  downloadBlob(kmzBlob, `${safeName}-marcacoes.kmz`);
+  showToast(`${pins.length} marcação(ões) exportada(s) em KMZ.`);
+}
+
+function buildKmlForPins(map, pins) {
+  const placemarks = pins.map((pin) => {
+    const description = [
+      pin.createdAt ? `Criado: ${formatDate(pin.createdAt)}` : "",
+      Number.isFinite(Number(pin.x)) && Number.isFinite(Number(pin.y)) ? `Pixel: ${Number(pin.x).toFixed(1)}, ${Number(pin.y).toFixed(1)}` : "",
+    ].filter(Boolean).join(" | ");
+
+    return `
+    <Placemark>
+      <name>${escapeXml(pin.name || "Ponto")}</name>
+      <description>${escapeXml(description)}</description>
+      <ExtendedData>
+        <Data name="campogeo_x"><value>${escapeXml(Number(pin.x).toFixed(3))}</value></Data>
+        <Data name="campogeo_y"><value>${escapeXml(Number(pin.y).toFixed(3))}</value></Data>
+        <Data name="campogeo_color"><value>${escapeXml(normalizePinColor(pin.color) || "#ff4d5f")}</value></Data>
+      </ExtendedData>
+      <Style>
+        <IconStyle>
+          <color>${pinColorToKmlColor(pin.color)}</color>
+          <scale>1.1</scale>
+          <Icon><href>http://maps.google.com/mapfiles/kml/pushpin/red-pushpin.png</href></Icon>
+        </IconStyle>
+      </Style>
+      <Point>
+        <coordinates>${Number(pin.lon).toFixed(8)},${Number(pin.lat).toFixed(8)},0</coordinates>
+      </Point>
+    </Placemark>`;
+  }).join("\n");
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <name>${escapeXml((map.name || "CampoGeo").replace(/\.pdf$/i, ""))}</name>
+    <description>Marcações exportadas pelo CampoGeo</description>
+${placemarks}
+  </Document>
+</kml>`;
+}
+
+function parseKmlPlacemarks(kmlText) {
+  const text = String(kmlText || "");
+  const placemarks = [];
+  const regex = /<Placemark[\s\S]*?<\/Placemark>/gi;
+  let match;
+
+  while ((match = regex.exec(text)) !== null) {
+    const block = match[0];
+    const name = decodeXml((block.match(/<name[^>]*>([\s\S]*?)<\/name>/i)?.[1] || "Ponto").replace(/<!\[CDATA\[|\]\]>/g, "").trim());
+
+    const coordText = block.match(/<coordinates[^>]*>([\s\S]*?)<\/coordinates>/i)?.[1] || "";
+    const firstCoord = coordText.trim().split(/\s+/)[0] || "";
+    const parts = firstCoord.split(",").map(Number);
+
+    const data = {};
+    const dataRegex = /<Data[^>]+name=["']([^"']+)["'][\s\S]*?<value[^>]*>([\s\S]*?)<\/value>/gi;
+    let dataMatch;
+    while ((dataMatch = dataRegex.exec(block)) !== null) {
+      data[dataMatch[1]] = decodeXml(dataMatch[2]).trim();
+    }
+
+    placemarks.push({
+      name,
+      lon: Number.isFinite(parts[0]) ? parts[0] : null,
+      lat: Number.isFinite(parts[1]) ? parts[1] : null,
+      x: Number(data.campogeo_x),
+      y: Number(data.campogeo_y),
+      color: normalizePinColor(data.campogeo_color) || null,
+    });
+  }
+
+  return placemarks;
+}
+
+async function extractKmlFromKmz(arrayBuffer) {
+  const entries = parseZipEntries(arrayBuffer);
+  const kmlEntry = entries.find((entry) => entry.name.toLowerCase().endsWith(".kml"));
+  if (!kmlEntry) throw new Error("KMZ sem arquivo KML.");
+
+  const bytes = await readZipEntryData(arrayBuffer, kmlEntry);
+  return new TextDecoder("utf-8").decode(bytes);
+}
+
+function parseZipEntries(arrayBuffer) {
+  const view = new DataView(arrayBuffer);
+  const entries = [];
+  let offset = 0;
+
+  while (offset + 30 < view.byteLength) {
+    const sig = view.getUint32(offset, true);
+    if (sig !== 0x04034b50) break;
+
+    const method = view.getUint16(offset + 8, true);
+    const compressedSize = view.getUint32(offset + 18, true);
+    const uncompressedSize = view.getUint32(offset + 22, true);
+    const nameLength = view.getUint16(offset + 26, true);
+    const extraLength = view.getUint16(offset + 28, true);
+    const nameStart = offset + 30;
+    const nameEnd = nameStart + nameLength;
+    const name = new TextDecoder("utf-8").decode(new Uint8Array(arrayBuffer, nameStart, nameLength));
+    const dataStart = nameEnd + extraLength;
+    const dataEnd = dataStart + compressedSize;
+
+    entries.push({ name, method, compressedSize, uncompressedSize, dataStart, dataEnd });
+    offset = dataEnd;
+  }
+
+  return entries;
+}
+
+async function readZipEntryData(arrayBuffer, entry) {
+  const bytes = new Uint8Array(arrayBuffer, entry.dataStart, entry.compressedSize);
+
+  if (entry.method === 0) return bytes;
+
+  if (entry.method === 8 && "DecompressionStream" in window) {
+    const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream("deflate-raw"));
+    const response = new Response(stream);
+    return new Uint8Array(await response.arrayBuffer());
+  }
+
+  throw new Error("Este KMZ está compactado. Importe um KML ou um KMZ exportado pelo CampoGeo.");
+}
+
+function createKmzBlob(kmlText, filename = "doc.kml") {
+  const nameBytes = new TextEncoder().encode(filename);
+  const data = new TextEncoder().encode(kmlText);
+  const crc = crc32(data);
+  const now = new Date();
+  const dosTime = ((now.getHours() & 31) << 11) | ((now.getMinutes() & 63) << 5) | ((Math.floor(now.getSeconds() / 2)) & 31);
+  const dosDate = (((now.getFullYear() - 1980) & 127) << 9) | (((now.getMonth() + 1) & 15) << 5) | (now.getDate() & 31);
+
+  const local = new ArrayBuffer(30 + nameBytes.length + data.length);
+  const localView = new DataView(local);
+  let o = 0;
+  localView.setUint32(o, 0x04034b50, true); o += 4;
+  localView.setUint16(o, 20, true); o += 2;
+  localView.setUint16(o, 0, true); o += 2;
+  localView.setUint16(o, 0, true); o += 2;
+  localView.setUint16(o, dosTime, true); o += 2;
+  localView.setUint16(o, dosDate, true); o += 2;
+  localView.setUint32(o, crc, true); o += 4;
+  localView.setUint32(o, data.length, true); o += 4;
+  localView.setUint32(o, data.length, true); o += 4;
+  localView.setUint16(o, nameBytes.length, true); o += 2;
+  localView.setUint16(o, 0, true); o += 2;
+  new Uint8Array(local, o, nameBytes.length).set(nameBytes); o += nameBytes.length;
+  new Uint8Array(local, o, data.length).set(data);
+
+  const central = new ArrayBuffer(46 + nameBytes.length);
+  const centralView = new DataView(central);
+  o = 0;
+  centralView.setUint32(o, 0x02014b50, true); o += 4;
+  centralView.setUint16(o, 20, true); o += 2;
+  centralView.setUint16(o, 20, true); o += 2;
+  centralView.setUint16(o, 0, true); o += 2;
+  centralView.setUint16(o, 0, true); o += 2;
+  centralView.setUint16(o, dosTime, true); o += 2;
+  centralView.setUint16(o, dosDate, true); o += 2;
+  centralView.setUint32(o, crc, true); o += 4;
+  centralView.setUint32(o, data.length, true); o += 4;
+  centralView.setUint32(o, data.length, true); o += 4;
+  centralView.setUint16(o, nameBytes.length, true); o += 2;
+  centralView.setUint16(o, 0, true); o += 2;
+  centralView.setUint16(o, 0, true); o += 2;
+  centralView.setUint16(o, 0, true); o += 2;
+  centralView.setUint16(o, 0, true); o += 2;
+  centralView.setUint32(o, 0, true); o += 4;
+  centralView.setUint32(o, 0, true); o += 4;
+  new Uint8Array(central, o, nameBytes.length).set(nameBytes);
+
+  const end = new ArrayBuffer(22);
+  const endView = new DataView(end);
+  o = 0;
+  endView.setUint32(o, 0x06054b50, true); o += 4;
+  endView.setUint16(o, 0, true); o += 2;
+  endView.setUint16(o, 0, true); o += 2;
+  endView.setUint16(o, 1, true); o += 2;
+  endView.setUint16(o, 1, true); o += 2;
+  endView.setUint32(o, central.byteLength, true); o += 4;
+  endView.setUint32(o, local.byteLength, true); o += 4;
+  endView.setUint16(o, 0, true);
+
+  return new Blob([local, central, end], { type: "application/vnd.google-earth.kmz" });
+}
+
+function crc32(bytes) {
+  let crc = -1;
+  for (let i = 0; i < bytes.length; i++) {
+    crc = (crc >>> 8) ^ CRC_TABLE[(crc ^ bytes[i]) & 0xff];
+  }
+  return (crc ^ -1) >>> 0;
+}
+
+const CRC_TABLE = (() => {
+  const table = new Uint32Array(256);
+  for (let i = 0; i < 256; i++) {
+    let c = i;
+    for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+    table[i] = c >>> 0;
+  }
+  return table;
+})();
+
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1200);
+}
+
+function sanitizeFilename(value) {
+  return String(value || "campogeo")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-zA-Z0-9._-]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 80) || "campogeo";
+}
+
+function escapeXml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&apos;");
+}
+
+function decodeXml(value) {
+  const textarea = document.createElement("textarea");
+  textarea.innerHTML = String(value ?? "");
+  return textarea.value;
 }
 
 async function handleLocateClick() {
@@ -1380,10 +2059,19 @@ function renderGpsMarker(point) {
   updateGpsMarkerScale();
 }
 
+function updateOverlayMarkerScale() {
+  const scale = 1 / Math.max(zoom, 0.01);
+
+  const gpsMarker = ui.gpsLayer.querySelector(".gps-user-marker");
+  if (gpsMarker) gpsMarker.style.transform = `scale(${scale})`;
+
+  ui.pointsLayer.querySelectorAll(".map-pin-marker").forEach((marker) => {
+    marker.style.transform = `scale(${scale})`;
+  });
+}
+
 function updateGpsMarkerScale() {
-  const marker = ui.gpsLayer.querySelector(".gps-user-marker");
-  if (!marker) return;
-  marker.style.transform = `scale(${1 / Math.max(zoom, 0.01)})`;
+  updateOverlayMarkerScale();
 }
 
 function centerOnGps() {
