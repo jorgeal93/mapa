@@ -1,8 +1,7 @@
-/* CampoGeo V5.4 Mobile limpo
-   - Cria imagem/mapa em alta qualidade a partir do PDF
-   - Salva offline no IndexedDB
-   - GPS por cima do mapa controlado pelo app
-   - Botão Localizar fixo
+/* CampoGeo V6.8 Carregamento corrigido
+   - Splash nunca fica infinito
+   - PDF.js carrega em segundo plano
+   - Avisos somem sozinhos
 */
 
 const DB_NAME = "campogeo-v4-9-db"; // mantém banco para não perder mapas salvos
@@ -138,6 +137,7 @@ let pinMode = false;
 let selectedPinColor = "#ff4d5f";
 let mousePinCandidate = null;
 const splashStartedAt = Date.now();
+let startupWatchdogId = null;
 
 
 
@@ -162,6 +162,7 @@ async function finishSplash() {
   if (elapsed < minTime) {
     await new Promise((resolve) => setTimeout(resolve, minTime - elapsed));
   }
+  clearTimeout(startupWatchdogId);
   hideSplashScreen();
 }
 
@@ -170,10 +171,52 @@ function updateAppHeight() {
   document.documentElement.style.setProperty("--app-height", `${Math.round(height)}px`);
 }
 
+
+function withTimeout(promise, timeoutMs = 3000, label = "operação") {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      reject(new Error(`${label} demorou demais`));
+    }, timeoutMs);
+
+    Promise.resolve(promise)
+      .then((value) => {
+        clearTimeout(timer);
+        resolve(value);
+      })
+      .catch((error) => {
+        clearTimeout(timer);
+        reject(error);
+      });
+  });
+}
+
+function forceOpenAppAfterStartupDelay() {
+  clearTimeout(startupWatchdogId);
+  startupWatchdogId = setTimeout(() => {
+    console.warn("CampoGeo: abertura forçada para evitar carregamento infinito.");
+    try {
+      resetStartupUi();
+      hideSplashScreen();
+      showToast("App aberto.", { timeout: 1200 });
+    } catch (error) {
+      console.warn("Falha no watchdog:", error);
+      document.body.classList.remove("app-loading");
+      document.getElementById("splashScreen")?.remove();
+      document.getElementById("homeScreen")?.classList.add("active");
+    }
+  }, 3200);
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   updateAppHeight();
   resetStartupUi();
-  init();
+  forceOpenAppAfterStartupDelay();
+  Promise.resolve(init()).catch((error) => {
+    console.error(error);
+    resetStartupUi();
+    hideSplashScreen();
+    showToast("App aberto com correção.", { timeout: 1400 });
+  });
 });
 
 window.addEventListener("resize", updateAppHeight);
@@ -194,26 +237,57 @@ function cleanupBeforeClose() {
 }
 
 async function init() {
+  hideToast();
   hideProgress();
+
   try {
-    db = await openDatabase();
-    setupEvents();
-    updateConnectionStatus();
-    updateEngineStatus(false, "Motor");
-    updateGpsUi("stopped", "GPS parado.");
-    updateOfflineReadyUi("checking");
-    await prepareOfflineAppShell();
-    await loadPdfJs();
-    await renderMapList();
-    await updateOfflineReadyStatus();
-    cleanupOldV3Databases();
-    registerServiceWorker();
-    await finishSplash();
+    db = await withTimeout(openDatabase(), 2500, "banco");
   } catch (error) {
-    console.error(error);
-    showToast("Erro ao iniciar app.");
-    await finishSplash();
+    console.warn("Banco offline não abriu a tempo:", error);
   }
+
+  try {
+    setupEvents();
+  } catch (error) {
+    console.warn("Falha nos eventos:", error);
+  }
+
+  updateConnectionStatus();
+  updateEngineStatus(false, "Motor");
+  updateGpsUi("stopped", "GPS parado.");
+  updateOfflineReadyUi("checking");
+
+  // O app deve abrir rápido. Cache, PDF.js e offline não podem prender o splash.
+  try {
+    await withTimeout(prepareOfflineAppShell(), 2200, "cache offline");
+  } catch (error) {
+    console.warn("Cache offline demorou:", error);
+  }
+
+  try {
+    await withTimeout(renderMapList(), 2500, "lista de mapas");
+  } catch (error) {
+    console.warn("Lista de mapas demorou:", error);
+  }
+
+  try {
+    await withTimeout(updateOfflineReadyStatus(), 1800, "status offline");
+  } catch (error) {
+    console.warn("Status offline demorou:", error);
+  }
+
+  cleanupOldV3Databases();
+  registerServiceWorker();
+
+  // Abre a tela mesmo se PDF.js demorar. Ele continua carregando em segundo plano.
+  await finishSplash();
+
+  loadPdfJs()
+    .then(() => updateEngineStatus(Boolean(pdfJsReady), pdfJsReady ? "Motor" : "Sem motor"))
+    .catch((error) => {
+      console.warn("PDF.js em segundo plano falhou:", error);
+      updateEngineStatus(false, "Sem motor");
+    });
 }
 
 
@@ -377,28 +451,33 @@ function handleMapToolButtonClick(event) {
 }
 
 function actionOpenImporter() {
+  hideToast();
   ui.pdfInput?.click();
 }
 
 async function actionRefreshMaps() {
+  hideToast();
   flashButton("refreshMapsBtn");
   flashButton("dockRefreshBtn");
   await renderMapList();
-  showToast("Atualizado.");
+  showToast("Atualizado.", { timeout: 1200 });
 }
 
 function actionClearCache() {
+  hideToast();
   flashButton("clearCacheBtn");
   flashButton("dockCacheBtn");
   clearCacheAndReload();
 }
 
 function actionResetEverything() {
+  hideToast();
   flashButton("resetAllBtn");
   resetEverything();
 }
 
 async function actionBackHome() {
+  hideToast();
   document.body.classList.remove("map-open");
   updateAppHeight();
   ui.mapScreen.classList.remove("active");
@@ -437,6 +516,7 @@ function actionLocate() {
 }
 
 function actionTogglePinMode() {
+  hideToast();
   if (!currentMap) {
     showToast("Abra um mapa primeiro.");
     return;
@@ -452,6 +532,7 @@ function actionTogglePinMode() {
 }
 
 function actionOpenKmzImporter() {
+  hideToast();
   if (!currentMap) {
     showToast("Abra um mapa primeiro.");
     return;
@@ -460,6 +541,7 @@ function actionOpenKmzImporter() {
 }
 
 function actionExportKmz() {
+  hideToast();
   exportCurrentMapPinsAsKmz().catch((error) => {
     console.error(error);
     showToast(error.message || "Não consegui exportar KMZ.");
@@ -468,6 +550,7 @@ function actionExportKmz() {
 
 
 async function actionClearAllPins() {
+  hideToast();
   if (!currentMap) {
     showToast("Abra um mapa primeiro.");
     return;
@@ -602,8 +685,10 @@ async function prepareOfflineAppShell() {
   }
 
   try {
-    const cache = await caches.open("campogeo-app-shell-v4-8");
-    await Promise.allSettled(APP_FILES_TO_CACHE.map((file) => cache.add(file)));
+    const cache = await withTimeout(caches.open("campogeo-app-shell-v4-8"), 1200, "abrir cache");
+    await Promise.allSettled(
+      APP_FILES_TO_CACHE.map((file) => withTimeout(cache.add(file), 900, `cache ${file}`))
+    );
     return true;
   } catch (error) {
     console.warn("Falha preparando offline:", error);
@@ -744,15 +829,26 @@ function loadScript(src) {
       if (window.pdfjsLib) return resolve(true);
     }
 
+    const timer = setTimeout(() => {
+      script.remove();
+      reject(new Error(`Tempo esgotado carregando ${src}`));
+    }, 3500);
+
     const script = document.createElement("script");
     script.src = src;
     script.async = true;
     script.crossOrigin = "anonymous";
-    script.onload = () => resolve(true);
+
+    script.onload = () => {
+      clearTimeout(timer);
+      resolve(true);
+    };
+
     script.onerror = () => {
-      script.remove();
+      clearTimeout(timer);
       reject(new Error(`Falha ao carregar ${src}`));
     };
+
     document.head.appendChild(script);
   });
 }
@@ -1159,7 +1255,7 @@ async function openMap(mapId) {
       ? "Mapa Real • GPS disponível"
       : "Mapa Real • sem GeoPDF";
 
-    showToast("Mapa aberto.");
+    showToast("Mapa aberto.", { timeout: 1200 });
   } catch (error) {
     console.error(error);
     hideProgress();
@@ -2404,14 +2500,10 @@ function updateLocateButton(state, label) {
 }
 
 function showGpsDebug(message, type = "") {
-  ui.gpsDebugBox.className = `gps-debug-box ${type}`;
-  ui.gpsDebugBox.innerHTML = message;
-  ui.gpsDebugBox.hidden = false;
-
-  clearTimeout(showGpsDebug.timer);
-  showGpsDebug.timer = setTimeout(() => {
-    ui.gpsDebugBox.hidden = true;
-  }, 7000);
+  if (!ui.gpsDebugBox) return;
+  ui.gpsDebugBox.hidden = true;
+  ui.gpsDebugBox.textContent = "";
+  ui.gpsDebugBox.innerHTML = "";
 }
 
 function showProgress(title, text, percent = 0) {
@@ -2443,11 +2535,11 @@ async function clearCacheAndReload() {
       await reg?.update?.();
     }
 
-    showToast("Cache atualizado.");
+    showToast("Cache atualizado.", { timeout: 1200 });
     setTimeout(() => location.reload(), 650);
   } catch (error) {
     console.warn(error);
-    showToast("Cache atualizado.");
+    showToast("Cache atualizado.", { timeout: 1200 });
     setTimeout(() => location.reload(), 650);
   }
 }
@@ -2507,9 +2599,53 @@ function escapeHtml(value) {
     .replaceAll("'", "&#039;");
 }
 
-function showToast(message) {
-  ui.toast.textContent = message;
-  ui.toast.classList.add("show");
+function showToast(message, options = {}) {
+  if (!ui.toast) return;
+
+  const text = String(message || "").trim();
+
+  hideToast();
+
+  if (!text) return;
+
   clearTimeout(showToast.timer);
-  showToast.timer = setTimeout(() => ui.toast.classList.remove("show"), 2600);
+  clearTimeout(showToast.forceTimer);
+
+  ui.toast.textContent = text;
+  ui.toast.hidden = false;
+  ui.toast.classList.remove("important-toast");
+  ui.toast.classList.add("toast-visible");
+  ui.toast.style.display = "block";
+  ui.toast.style.visibility = "visible";
+  ui.toast.style.opacity = "1";
+
+  const timeout = Number(options.timeout || 1450);
+
+  showToast.timer = setTimeout(() => {
+    hideToast();
+  }, timeout);
+
+  // Segurança extra: se o navegador travar animação/classe, força sumir.
+  showToast.forceTimer = setTimeout(() => {
+    hideToast();
+  }, timeout + 650);
+}
+
+function hideToast() {
+  if (!ui.toast) return;
+
+  clearTimeout(showToast.timer);
+  clearTimeout(showToast.forceTimer);
+
+  ui.toast.classList.remove("toast-visible", "important-toast");
+  ui.toast.hidden = true;
+  ui.toast.textContent = "";
+  ui.toast.style.display = "none";
+  ui.toast.style.visibility = "hidden";
+  ui.toast.style.opacity = "0";
+}
+
+function isImportantToast(text) {
+  // Mantido por compatibilidade, mas na V6.7 todo aviso some sozinho.
+  return Boolean(String(text || "").trim());
 }

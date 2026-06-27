@@ -1,7 +1,7 @@
 {
   "name": "CampoGeo",
   "short_name": "CampoGeo",
-  "description": "CampoGeo - interface polida sem mensagens permanentes e com ícones melhores.",
+  "description": "CampoGeo - carregamento corrigido sem splash infinito.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

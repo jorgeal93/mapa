@@ -5571,3 +5571,129 @@ body:not(.map-open) {
     height: 19px !important;
   }
 }
+
+
+/* ===== CampoGeo V6.6 — Sem textos de ação comum ===== */
+
+/* Toast só aparece quando o JS permitir. Por padrão fica totalmente escondido. */
+.toast,
+.toast[hidden],
+.toast:empty {
+  display: none !important;
+}
+
+.toast.important-toast {
+  display: block !important;
+}
+
+/* Remove qualquer caixa de debug/status permanente dentro do mapa */
+.gps-debug-box,
+.gps-debug-box * {
+  display: none !important;
+}
+
+/* Não deixa texto temporário atrapalhar mapa */
+.map-screen .toast:not(.important-toast) {
+  display: none !important;
+}
+
+
+/* ===== CampoGeo V6.7 — Avisos aparecem e somem de verdade ===== */
+
+/* Por padrão, toast nunca fica permanente */
+.toast {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+/* Só aparece quando o JS coloca .toast-visible */
+.toast.toast-visible {
+  display: block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  animation: toastInOut 1.45s ease both !important;
+}
+
+/* Mesmo se sobrar classe antiga, esconda se não estiver visível */
+.toast.important-toast:not(.toast-visible),
+.toast[hidden],
+.toast:empty {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
+/* Caixas permanentes antigas ficam sempre ocultas */
+.gps-debug-box,
+.gps-debug-box *,
+.debug-box,
+.debug-box *,
+.status-message,
+.status-message * {
+  display: none !important;
+}
+
+/* Animação curta: entra, segura pouco, sai */
+@keyframes toastInOut {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(8px) scale(.98);
+  }
+  12% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+  78% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(8px) scale(.98);
+  }
+}
+
+/* Se estiver fora do mapa, mantém a posição bonita */
+@media (min-width: 721px) {
+  .toast.toast-visible {
+    position: fixed !important;
+    left: 50% !important;
+    right: auto !important;
+    bottom: 86px !important;
+    transform: translateX(-50%) !important;
+    max-width: min(460px, calc(100% - 32px)) !important;
+    z-index: 2000 !important;
+  }
+}
+
+@media (max-width: 720px) {
+  .toast.toast-visible {
+    position: fixed !important;
+    left: 50% !important;
+    right: auto !important;
+    bottom: calc(76px + env(safe-area-inset-bottom)) !important;
+    transform: translateX(-50%) !important;
+    max-width: calc(100% - 110px) !important;
+    padding: 7px 10px !important;
+    border-radius: 999px !important;
+    font-size: 11px !important;
+    z-index: 2000 !important;
+  }
+}
+
+
+/* ===== CampoGeo V6.8 — Carregamento com proteção ===== */
+
+/* Se por algum motivo o JS remover a classe app-loading, o splash some na hora */
+body:not(.app-loading) .splash-screen {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
+}
+
+/* A tela inicial sempre consegue aparecer após o carregamento */
+body:not(.app-loading) #homeScreen.active {
+  display: grid !important;
+}

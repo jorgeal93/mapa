@@ -1,4 +1,4 @@
-const CACHE_NAME = "campogeo-v6-5-polido-sem-mensagens";
+const CACHE_NAME = "campogeo-v6-8-carregamento-corrigido";
 const APP_SHELL = [
   "./",
   "./index.html",
