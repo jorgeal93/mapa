@@ -1,24 +1,18 @@
-# CampoGeo V5.3 — Escolher cor do alfinete
+# CampoGeo V5.4 — Mobile mais limpo
 
-Novidades:
-- Seletor de cor dentro do mapa.
-- Escolha a cor antes de tocar no mapa.
-- Cada alfinete salva a própria cor.
-- Cores disponíveis:
-  - vermelho
-  - verde
-  - azul
-  - amarelo
-  - roxo
-  - laranja
-- Exportar KMZ leva a cor do ponto.
-- Importar KMZ/KML do CampoGeo tenta manter a cor.
-- Marcadores continuam pequenos e sem fundo branco.
+Melhorias para celular:
+- Menos coisa cobrindo o mapa.
+- Botão Localizar virou botão redondo pequeno.
+- Barra de ferramentas ficou mais baixa e compacta.
+- Cores aparecem só quando o modo Alfinete está ligado.
+- Marcador ficou maior que o ponto anterior, mas sem fundo branco.
+- Aviso “toque no mapa” ficou menor.
+- Importar/Exportar KMZ mantido.
 - Botão Limpar mantido.
+- Offline mantido.
 
 Como usar:
 1. Abra o mapa.
-2. Escolha uma cor na barra de cores.
-3. Aperte Alfinete.
+2. Aperte Alfinete.
+3. Escolha a cor que aparece acima da barra.
 4. Toque no mapa.
-5. Dê um nome ao ponto.

@@ -1,4 +1,4 @@
-const CACHE_NAME = "campogeo-v5-3-cor-alfinete";
+const CACHE_NAME = "campogeo-v5-4-mobile-limpo";
 const APP_SHELL = [
   "./",
   "./index.html",

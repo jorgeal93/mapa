@@ -1,4 +1,4 @@
-/* CampoGeo V5.3 Cor do alfinete
+/* CampoGeo V5.4 Mobile limpo
    - Cria imagem/mapa em alta qualidade a partir do PDF
    - Salva offline no IndexedDB
    - GPS por cima do mapa controlado pelo app
@@ -86,6 +86,7 @@ const ui = {
   exportKmzBtn: $("#exportKmzBtn"),
   clearPinsBtn: $("#clearPinsBtn"),
   pinColorPicker: $("#pinColorPicker"),
+  mapActionBar: $(".map-action-bar"),
   kmzInput: $("#kmzInput"),
 
   progressOverlay: $("#progressOverlay"),
@@ -399,6 +400,7 @@ async function actionBackHome() {
   pinMode = false;
   ui.pinModeBtn?.classList.remove("active");
   ui.mapWrapper?.classList.remove("pin-mode");
+  ui.mapActionBar?.classList.remove("pin-active");
   await renderMapList();
 }
 
@@ -416,7 +418,8 @@ function actionTogglePinMode() {
   pinMode = !pinMode;
   ui.pinModeBtn?.classList.toggle("active", pinMode);
   ui.mapWrapper?.classList.toggle("pin-mode", pinMode);
-  showToast(pinMode ? "Alfinete ligado: toque no mapa." : "Alfinete desligado.");
+  ui.mapActionBar?.classList.toggle("pin-active", pinMode);
+  showToast(pinMode ? "Alfinete ligado: escolha a cor e toque no mapa." : "Alfinete desligado.");
 }
 
 function actionOpenKmzImporter() {
@@ -1202,6 +1205,7 @@ function cleanupCurrentMap() {
   pinMode = false;
   ui.pinModeBtn?.classList.remove("active");
   ui.mapWrapper?.classList.remove("pin-mode");
+  ui.mapActionBar?.classList.remove("pin-active");
   imageNaturalSize = { width: 0, height: 0 };
   displaySize = { width: 0, height: 0 };
   zoom = 1;
