@@ -1,7 +1,7 @@
 {
   "name": "CampoGeo",
   "short_name": "CampoGeo",
-  "description": "CampoGeo - interface mobile mais limpa com alfinetes coloridos.",
+  "description": "CampoGeo - interface responsiva e organizada para PC e celular.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

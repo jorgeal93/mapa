@@ -3375,3 +3375,2018 @@ button.map-pin-marker:active {
     min-height: 21px !important;
   }
 }
+
+
+/* ===== CampoGeo V5.5 — Mobile menos poluído ===== */
+
+/* Remove aviso fixo de toque no mapa */
+.map-wrapper.pin-mode::after {
+  display: none !important;
+  content: none !important;
+}
+
+/* Botão GPS/posição só como ícone */
+.locate-button {
+  min-width: 56px !important;
+  width: 56px !important;
+  height: 56px !important;
+  min-height: 56px !important;
+  padding: 0 !important;
+  border-radius: 50% !important;
+}
+
+.locate-button span:not(.locate-dot) {
+  display: none !important;
+}
+
+.locate-button .locate-dot {
+  width: 34px !important;
+  height: 34px !important;
+  border-radius: 50% !important;
+}
+
+/* Aba de cor: não ocupa largura inteira */
+.pin-color-picker {
+  position: absolute !important;
+  left: 8px !important;
+  bottom: calc(100% + 8px) !important;
+  transform: translateY(8px) scale(.96) !important;
+  width: auto !important;
+  min-height: 0 !important;
+  max-width: none !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 6px !important;
+  padding: 7px 8px !important;
+  border-radius: 999px !important;
+  background: rgba(5,17,9,.92) !important;
+  border: 1px solid rgba(255,255,255,.14) !important;
+  box-shadow: 0 14px 32px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.08) !important;
+  backdrop-filter: blur(18px) !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  z-index: 160 !important;
+  transition: opacity .18s ease, transform .18s ease, visibility .18s ease !important;
+}
+
+.map-action-bar.pin-active .pin-color-picker {
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  transform: translateY(0) scale(1) !important;
+}
+
+.pin-color-title {
+  display: none !important;
+}
+
+.pin-color-dot {
+  width: 24px !important;
+  height: 24px !important;
+  min-width: 24px !important;
+  min-height: 24px !important;
+}
+
+/* Barra inferior menor e menos alta */
+.map-action-bar.has-color-picker,
+.map-action-bar {
+  grid-template-columns: repeat(4, 1fr) !important;
+  align-items: center !important;
+}
+
+/* some com os textos longos no mobile e deixa só ícone + nome curto */
+@media (max-width: 720px) {
+  .map-action-bar.has-color-picker,
+  .map-action-bar {
+    bottom: calc(8px + env(safe-area-inset-bottom)) !important;
+    width: calc(100% - 18px) !important;
+    gap: 6px !important;
+    padding: 6px !important;
+    border-radius: 22px !important;
+  }
+
+  .map-tool-button {
+    min-height: 44px !important;
+    height: 44px !important;
+    border-radius: 16px !important;
+    padding: 0 6px !important;
+    flex-direction: row !important;
+    gap: 5px !important;
+  }
+
+  .map-tool-icon {
+    width: 24px !important;
+    height: 24px !important;
+    min-width: 24px !important;
+    border-radius: 11px !important;
+    font-size: 13px !important;
+  }
+
+  .map-tool-label {
+    font-size: 8px !important;
+    max-width: 46px !important;
+    overflow: hidden !important;
+    white-space: nowrap !important;
+    text-overflow: ellipsis !important;
+  }
+
+  /* GPS/posição como bolinha pequena no canto, sem palavra */
+  .locate-button {
+    right: 12px !important;
+    left: auto !important;
+    bottom: calc(62px + env(safe-area-inset-bottom)) !important;
+    width: 48px !important;
+    min-width: 48px !important;
+    height: 48px !important;
+    min-height: 48px !important;
+    border-radius: 50% !important;
+    padding: 0 !important;
+    opacity: .94;
+  }
+
+  .locate-button .locate-dot {
+    width: 30px !important;
+    height: 30px !important;
+  }
+
+  /* aba de cor acima do botão Alfinete, parecendo menu pequeno */
+  .pin-color-picker {
+    left: 6px !important;
+    bottom: calc(100% + 8px) !important;
+    gap: 5px !important;
+    padding: 7px !important;
+    border-radius: 999px !important;
+  }
+
+  .pin-color-dot {
+    width: 22px !important;
+    height: 22px !important;
+    min-width: 22px !important;
+    min-height: 22px !important;
+  }
+
+  /* marcador continua visível, mas sem poluir */
+  .map-pin-marker {
+    width: 24px !important;
+    height: 24px !important;
+    margin-left: -12px !important;
+    margin-top: -12px !important;
+  }
+
+  .map-pin-drop {
+    width: 16px !important;
+    height: 16px !important;
+  }
+
+  /* toast menor para não cobrir mapa, caso apareça */
+  .toast {
+    left: 50% !important;
+    right: auto !important;
+    bottom: calc(66px + env(safe-area-inset-bottom)) !important;
+    transform: translateX(-50%) !important;
+    width: auto !important;
+    max-width: calc(100% - 70px) !important;
+    padding: 9px 12px !important;
+    border-radius: 999px !important;
+    font-size: 12px !important;
+    text-align: center !important;
+  }
+}
+
+@media (max-width: 390px) {
+  .map-tool-label {
+    display: none !important;
+  }
+
+  .map-tool-button {
+    justify-content: center !important;
+  }
+
+  .pin-color-dot {
+    width: 21px !important;
+    height: 21px !important;
+    min-width: 21px !important;
+    min-height: 21px !important;
+  }
+}
+
+
+/* ===== CampoGeo V5.6 — Visual mobile tipo app de mapa ===== */
+
+/* Pílula de coordenada/status no rodapé */
+.map-coord-pill {
+  position: fixed;
+  left: 50%;
+  bottom: calc(58px + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  z-index: 132;
+  min-width: min(320px, calc(100% - 152px));
+  max-width: calc(100% - 152px);
+  min-height: 38px;
+  display: grid;
+  place-items: center;
+  padding: 0 16px;
+  border-radius: 999px;
+  background: rgba(28, 31, 29, .88);
+  border: 1px solid rgba(255,255,255,.10);
+  color: #f4fff7;
+  font-size: 14px;
+  font-weight: 850;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: .01em;
+  box-shadow: 0 14px 32px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.07);
+  backdrop-filter: blur(16px);
+  pointer-events: none;
+}
+
+/* Desktop não muda tanto */
+.native-map-bar {
+  max-width: 620px;
+}
+
+/* Mobile: topo estilo app de mapa */
+@media (max-width: 720px) {
+  .map-screen.active {
+    background: #07120b !important;
+  }
+
+  .map-topbar {
+    display: grid !important;
+    grid-template-columns: 52px 1fr 52px !important;
+    align-items: center !important;
+    min-height: 58px !important;
+    padding: 6px 10px !important;
+    background: rgba(8, 18, 12, .94) !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: 0 8px 24px rgba(0,0,0,.24) !important;
+    backdrop-filter: blur(18px) !important;
+  }
+
+  .map-topbar::after {
+    content: "ⓘ";
+    justify-self: end;
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 999px;
+    color: var(--primary);
+    font-size: 25px;
+    font-weight: 700;
+    opacity: .95;
+  }
+
+  #backBtn {
+    width: 42px !important;
+    min-width: 42px !important;
+    height: 42px !important;
+    min-height: 42px !important;
+    border-radius: 999px !important;
+    background: transparent !important;
+    border: 0 !important;
+    color: var(--primary) !important;
+    font-size: 31px !important;
+    box-shadow: none !important;
+  }
+
+  .map-title {
+    text-align: center;
+    display: grid;
+    justify-items: center;
+    overflow: hidden;
+  }
+
+  .map-title strong {
+    max-width: 100%;
+    font-size: 18px !important;
+    font-weight: 900 !important;
+    letter-spacing: -.02em;
+    color: #f4fff7 !important;
+  }
+
+  .map-title span {
+    max-width: 100%;
+    font-size: 11px !important;
+    color: rgba(244,255,247,.72) !important;
+  }
+
+  /* Mostra só o nome limpo, corta antes de poluir */
+  #currentMapName {
+    max-width: 190px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  /* Botão GPS tipo app de mapa: bolinha flutuante */
+  .locate-button {
+    right: 18px !important;
+    bottom: calc(94px + env(safe-area-inset-bottom)) !important;
+    width: 58px !important;
+    min-width: 58px !important;
+    height: 58px !important;
+    min-height: 58px !important;
+    border-radius: 999px !important;
+    background: rgba(12, 14, 13, .94) !important;
+    color: var(--primary) !important;
+    border: 0 !important;
+    box-shadow: 0 14px 32px rgba(0,0,0,.40) !important;
+    backdrop-filter: blur(14px) !important;
+  }
+
+  .locate-button .locate-dot {
+    width: 35px !important;
+    height: 35px !important;
+    background: transparent !important;
+    color: var(--primary) !important;
+    font-size: 26px !important;
+    box-shadow: none !important;
+  }
+
+  /* Rodapé tipo app de mapa */
+  .native-map-bar,
+  .map-action-bar.has-color-picker,
+  .map-action-bar {
+    bottom: calc(6px + env(safe-area-inset-bottom)) !important;
+    width: calc(100% - 18px) !important;
+    height: 52px !important;
+    min-height: 52px !important;
+    grid-template-columns: 52px 52px 52px 52px !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    gap: 0 !important;
+    padding: 6px 12px !important;
+    border-radius: 0 !important;
+    background: rgba(5, 17, 9, .96) !important;
+    border: 0 !important;
+    border-top: 1px solid rgba(255,255,255,.10) !important;
+    box-shadow: 0 -10px 30px rgba(0,0,0,.28) !important;
+    backdrop-filter: blur(18px) !important;
+  }
+
+  .map-tool-button {
+    width: 48px !important;
+    min-width: 48px !important;
+    height: 48px !important;
+    min-height: 48px !important;
+    padding: 0 !important;
+    border-radius: 999px !important;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    color: var(--primary) !important;
+  }
+
+  .map-tool-button.active {
+    background: rgba(40,199,111,.13) !important;
+    color: #8ff4ae !important;
+  }
+
+  .map-tool-button.danger-tool {
+    color: #ff8f9a !important;
+    background: transparent !important;
+    border: 0 !important;
+  }
+
+  .map-tool-icon {
+    width: 38px !important;
+    height: 38px !important;
+    border-radius: 999px !important;
+    background: transparent !important;
+    font-size: 24px !important;
+  }
+
+  .map-tool-label {
+    display: none !important;
+  }
+
+  .map-coord-pill {
+    bottom: calc(15px + env(safe-area-inset-bottom)) !important;
+    min-width: 210px !important;
+    max-width: calc(100% - 176px) !important;
+    height: 38px !important;
+    min-height: 38px !important;
+    font-size: 13px !important;
+    background: rgba(42, 44, 42, .92) !important;
+    z-index: 134 !important;
+  }
+
+  /* Menu de cor abre como aba acima do ícone marcar */
+  .pin-color-picker {
+    left: 8px !important;
+    bottom: calc(100% + 8px) !important;
+    transform: translateY(8px) scale(.96) !important;
+    padding: 8px !important;
+    gap: 6px !important;
+    background: rgba(10, 13, 12, .94) !important;
+    border: 1px solid rgba(255,255,255,.12) !important;
+    box-shadow: 0 14px 34px rgba(0,0,0,.38) !important;
+  }
+
+  .pin-color-dot {
+    width: 25px !important;
+    height: 25px !important;
+    min-width: 25px !important;
+    min-height: 25px !important;
+  }
+
+  /* Toast praticamente não cobre o mapa */
+  .toast {
+    bottom: calc(65px + env(safe-area-inset-bottom)) !important;
+    max-width: calc(100% - 110px) !important;
+    padding: 7px 11px !important;
+    border-radius: 999px !important;
+    font-size: 11px !important;
+    opacity: .94;
+  }
+}
+
+@media (max-width: 390px) {
+  .map-coord-pill {
+    min-width: 190px !important;
+    max-width: calc(100% - 158px) !important;
+    font-size: 12px !important;
+  }
+
+  .native-map-bar,
+  .map-action-bar {
+    padding-left: 9px !important;
+    padding-right: 9px !important;
+  }
+}
+
+
+/* ===== CampoGeo V5.7 — GPS como indicador ===== */
+
+/* GPS deixa de parecer botão grande e vira indicador discreto */
+.gps-indicator,
+.locate-button.gps-indicator {
+  position: fixed !important;
+  right: 14px !important;
+  bottom: calc(72px + env(safe-area-inset-bottom)) !important;
+  left: auto !important;
+  width: 46px !important;
+  min-width: 46px !important;
+  height: 46px !important;
+  min-height: 46px !important;
+  padding: 0 !important;
+  border-radius: 999px !important;
+  display: grid !important;
+  place-items: center !important;
+  background: rgba(6, 14, 10, .84) !important;
+  border: 1px solid rgba(255,255,255,.12) !important;
+  color: #9aa69d !important;
+  box-shadow: 0 10px 24px rgba(0,0,0,.30), inset 0 1px 0 rgba(255,255,255,.06) !important;
+  backdrop-filter: blur(14px) !important;
+  z-index: 136 !important;
+  opacity: .92 !important;
+}
+
+.gps-indicator span:not(.gps-indicator-core),
+.gps-indicator .locate-dot {
+  display: none !important;
+}
+
+.gps-indicator-core {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 29px;
+  height: 29px;
+  border-radius: 999px;
+  font-size: 20px;
+  line-height: 1;
+  color: currentColor;
+  background: rgba(255,255,255,.045);
+}
+
+.gps-indicator-core::after {
+  content: "";
+  position: absolute;
+  right: 1px;
+  bottom: 1px;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #8a9390;
+  border: 2px solid rgba(6,14,10,.95);
+  box-shadow: 0 0 0 2px rgba(138,147,144,.12);
+}
+
+/* estados visuais */
+.gps-indicator[data-gps-state="locating"],
+.gps-indicator.locating {
+  color: #ffd166 !important;
+}
+
+.gps-indicator[data-gps-state="locating"] .gps-indicator-core::after,
+.gps-indicator.locating .gps-indicator-core::after {
+  background: #ffd166;
+  box-shadow: 0 0 0 4px rgba(255,209,102,.14);
+  animation: gpsPulse 1s ease-in-out infinite;
+}
+
+.gps-indicator[data-gps-state="active"],
+.gps-indicator.active {
+  color: #28c76f !important;
+}
+
+.gps-indicator[data-gps-state="active"] .gps-indicator-core::after,
+.gps-indicator.active .gps-indicator-core::after {
+  background: #28c76f;
+  box-shadow: 0 0 0 4px rgba(40,199,111,.16);
+}
+
+.gps-indicator[data-gps-state="outside"],
+.gps-indicator.outside {
+  color: #ff8a00 !important;
+}
+
+.gps-indicator[data-gps-state="outside"] .gps-indicator-core::after,
+.gps-indicator.outside .gps-indicator-core::after {
+  background: #ff8a00;
+  box-shadow: 0 0 0 4px rgba(255,138,0,.16);
+}
+
+.gps-indicator[data-gps-state="error"],
+.gps-indicator.error {
+  color: #ff5d6c !important;
+}
+
+.gps-indicator[data-gps-state="error"] .gps-indicator-core::after,
+.gps-indicator.error .gps-indicator-core::after {
+  background: #ff5d6c;
+  box-shadow: 0 0 0 4px rgba(255,93,108,.16);
+}
+
+@keyframes gpsPulse {
+  0%, 100% { transform: scale(.88); opacity: .72; }
+  50% { transform: scale(1.18); opacity: 1; }
+}
+
+/* Mobile: indicador ainda menor e não atrapalha o mapa */
+@media (max-width: 720px) {
+  .gps-indicator,
+  .locate-button.gps-indicator {
+    right: 13px !important;
+    bottom: calc(66px + env(safe-area-inset-bottom)) !important;
+    width: 42px !important;
+    min-width: 42px !important;
+    height: 42px !important;
+    min-height: 42px !important;
+    opacity: .90 !important;
+  }
+
+  .gps-indicator-core {
+    width: 27px !important;
+    height: 27px !important;
+    font-size: 18px !important;
+  }
+
+  .gps-indicator-core::after {
+    width: 7px !important;
+    height: 7px !important;
+  }
+}
+
+
+/* ===== CampoGeo V5.8 — GPS estilo seta de navegação ===== */
+
+/* Novo GPS igual app de mapa: círculo preto + seta verde */
+.gps-nav-button,
+.locate-button.gps-nav-button {
+  position: fixed !important;
+  right: 18px !important;
+  bottom: calc(92px + env(safe-area-inset-bottom)) !important;
+  left: auto !important;
+  width: 72px !important;
+  min-width: 72px !important;
+  height: 72px !important;
+  min-height: 72px !important;
+  padding: 0 !important;
+  border-radius: 999px !important;
+  display: grid !important;
+  place-items: center !important;
+  background:
+    radial-gradient(circle at 35% 28%, rgba(255,255,255,.055), transparent 34%),
+    #121413 !important;
+  border: 1px solid rgba(255,255,255,.08) !important;
+  box-shadow:
+    0 18px 36px rgba(0,0,0,.44),
+    0 5px 12px rgba(0,0,0,.28),
+    inset 0 1px 0 rgba(255,255,255,.07) !important;
+  backdrop-filter: blur(12px) !important;
+  z-index: 138 !important;
+  opacity: .98 !important;
+  transform: translateZ(0);
+  transition:
+    transform .16s ease,
+    box-shadow .16s ease,
+    background .16s ease,
+    opacity .16s ease !important;
+}
+
+/* remove qualquer conteúdo antigo */
+.gps-nav-button .gps-indicator-core,
+.gps-nav-button .locate-dot,
+.gps-nav-button span:not(.gps-nav-arrow) {
+  display: none !important;
+}
+
+/* seta desenhada em CSS */
+.gps-nav-arrow {
+  position: relative;
+  display: block;
+  width: 34px;
+  height: 34px;
+  transform: rotate(45deg);
+  filter: drop-shadow(0 0 7px rgba(40,199,111,.28));
+  transition: transform .18s ease, filter .18s ease, opacity .18s ease;
+}
+
+.gps-nav-arrow::before {
+  content: "";
+  position: absolute;
+  left: 7px;
+  top: 2px;
+  width: 18px;
+  height: 28px;
+  background: transparent;
+  border-left: 4px solid var(--primary);
+  border-top: 4px solid var(--primary);
+  border-radius: 4px 0 0 0;
+  transform: skew(-14deg);
+}
+
+.gps-nav-arrow::after {
+  content: "";
+  position: absolute;
+  left: 7px;
+  top: 22px;
+  width: 4px;
+  height: 12px;
+  border-radius: 999px;
+  background: var(--primary);
+  transform: rotate(-45deg);
+  transform-origin: top center;
+}
+
+/* interação ao tocar */
+.gps-nav-button:active {
+  transform: scale(.94) !important;
+  box-shadow:
+    0 10px 24px rgba(0,0,0,.40),
+    inset 0 1px 0 rgba(255,255,255,.08) !important;
+}
+
+.gps-nav-button:active .gps-nav-arrow {
+  transform: rotate(45deg) scale(.92);
+}
+
+/* Estados do GPS */
+.gps-nav-button[data-gps-state="idle"] .gps-nav-arrow,
+.gps-nav-button:not([data-gps-state]) .gps-nav-arrow {
+  opacity: .82;
+}
+
+.gps-nav-button[data-gps-state="locating"] {
+  box-shadow:
+    0 18px 36px rgba(0,0,0,.44),
+    0 0 0 6px rgba(255,209,102,.08),
+    inset 0 1px 0 rgba(255,255,255,.07) !important;
+}
+
+.gps-nav-button[data-gps-state="locating"] .gps-nav-arrow {
+  filter: drop-shadow(0 0 10px rgba(255,209,102,.55));
+  animation: gpsArrowPulse 1s ease-in-out infinite;
+}
+
+.gps-nav-button[data-gps-state="locating"] .gps-nav-arrow::before {
+  border-color: #ffd166;
+}
+
+.gps-nav-button[data-gps-state="locating"] .gps-nav-arrow::after {
+  background: #ffd166;
+}
+
+.gps-nav-button[data-gps-state="active"] {
+  box-shadow:
+    0 18px 36px rgba(0,0,0,.44),
+    0 0 0 6px rgba(40,199,111,.10),
+    inset 0 1px 0 rgba(255,255,255,.07) !important;
+}
+
+.gps-nav-button[data-gps-state="active"] .gps-nav-arrow {
+  filter: drop-shadow(0 0 10px rgba(40,199,111,.55));
+}
+
+.gps-nav-button[data-gps-state="outside"] .gps-nav-arrow {
+  filter: drop-shadow(0 0 10px rgba(255,138,0,.55));
+}
+
+.gps-nav-button[data-gps-state="outside"] .gps-nav-arrow::before {
+  border-color: #ff8a00;
+}
+
+.gps-nav-button[data-gps-state="outside"] .gps-nav-arrow::after {
+  background: #ff8a00;
+}
+
+.gps-nav-button[data-gps-state="error"] .gps-nav-arrow {
+  filter: drop-shadow(0 0 10px rgba(255,93,108,.55));
+}
+
+.gps-nav-button[data-gps-state="error"] .gps-nav-arrow::before {
+  border-color: #ff5d6c;
+}
+
+.gps-nav-button[data-gps-state="error"] .gps-nav-arrow::after {
+  background: #ff5d6c;
+}
+
+/* quando centraliza no GPS, dá um feedback rápido */
+.gps-nav-button.gps-bounce {
+  animation: gpsButtonBounce .34s ease;
+}
+
+@keyframes gpsArrowPulse {
+  0%, 100% { transform: rotate(45deg) scale(.94); opacity: .74; }
+  50% { transform: rotate(45deg) scale(1.08); opacity: 1; }
+}
+
+@keyframes gpsButtonBounce {
+  0% { transform: scale(1); }
+  42% { transform: scale(.90); }
+  100% { transform: scale(1); }
+}
+
+/* Mobile */
+@media (max-width: 720px) {
+  .gps-nav-button,
+  .locate-button.gps-nav-button {
+    right: 18px !important;
+    bottom: calc(88px + env(safe-area-inset-bottom)) !important;
+    width: 64px !important;
+    min-width: 64px !important;
+    height: 64px !important;
+    min-height: 64px !important;
+  }
+
+  .gps-nav-arrow {
+    width: 31px !important;
+    height: 31px !important;
+  }
+
+  .gps-nav-arrow::before {
+    left: 7px !important;
+    top: 2px !important;
+    width: 17px !important;
+    height: 26px !important;
+    border-left-width: 4px !important;
+    border-top-width: 4px !important;
+  }
+
+  .gps-nav-arrow::after {
+    left: 7px !important;
+    top: 21px !important;
+    width: 4px !important;
+    height: 11px !important;
+  }
+}
+
+@media (max-width: 390px) {
+  .gps-nav-button,
+  .locate-button.gps-nav-button {
+    width: 58px !important;
+    min-width: 58px !important;
+    height: 58px !important;
+    min-height: 58px !important;
+    right: 14px !important;
+  }
+
+  .gps-nav-arrow {
+    transform: rotate(45deg) scale(.92);
+  }
+}
+
+
+/* ===== CampoGeo V5.9 — GPS igual ao exemplo ===== */
+
+/* Sobrescreve versões antigas e deixa igual ao exemplo enviado */
+.gps-example-button,
+.locate-button.gps-example-button,
+.gps-nav-button.gps-example-button {
+  position: fixed !important;
+  right: 18px !important;
+  bottom: calc(96px + env(safe-area-inset-bottom)) !important;
+  left: auto !important;
+
+  width: 74px !important;
+  height: 74px !important;
+  min-width: 74px !important;
+  min-height: 74px !important;
+
+  display: grid !important;
+  place-items: center !important;
+  padding: 0 !important;
+  border-radius: 50% !important;
+
+  background: #151515 !important;
+  border: 0 !important;
+  color: #08b96f !important;
+
+  box-shadow:
+    0 16px 28px rgba(0,0,0,.42),
+    0 5px 10px rgba(0,0,0,.28),
+    inset 0 1px 0 rgba(255,255,255,.045) !important;
+
+  opacity: 1 !important;
+  z-index: 142 !important;
+  backdrop-filter: none !important;
+  transform: translateZ(0) !important;
+}
+
+/* remove seta antiga de CSS */
+.gps-example-button .gps-nav-arrow,
+.gps-example-button .gps-indicator-core,
+.gps-example-button .locate-dot,
+.gps-example-button span {
+  display: none !important;
+}
+
+.gps-example-icon {
+  display: block !important;
+  width: 42px !important;
+  height: 42px !important;
+  overflow: visible !important;
+  fill: none !important;
+  stroke: currentColor !important;
+  stroke-width: 5.2 !important;
+  stroke-linejoin: round !important;
+  stroke-linecap: round !important;
+  transform: rotate(0deg) translate(1px, -1px) !important;
+  filter:
+    drop-shadow(0 0 4px rgba(8,185,111,.35))
+    drop-shadow(0 1px 0 rgba(0,0,0,.35)) !important;
+}
+
+/* interação igual app: afunda ao tocar */
+.gps-example-button:active {
+  transform: scale(.93) !important;
+  box-shadow:
+    0 9px 20px rgba(0,0,0,.42),
+    inset 0 1px 0 rgba(255,255,255,.045) !important;
+}
+
+.gps-example-button.gps-bounce {
+  animation: gpsExampleBounce .34s ease !important;
+}
+
+@keyframes gpsExampleBounce {
+  0% { transform: scale(1); }
+  40% { transform: scale(.90); }
+  100% { transform: scale(1); }
+}
+
+/* estados pela cor da seta */
+.gps-example-button[data-gps-state="idle"],
+.gps-example-button:not([data-gps-state]) {
+  color: #08b96f !important;
+}
+
+.gps-example-button[data-gps-state="locating"] {
+  color: #ffd166 !important;
+}
+
+.gps-example-button[data-gps-state="locating"] .gps-example-icon {
+  animation: gpsExamplePulse 1s ease-in-out infinite !important;
+  filter: drop-shadow(0 0 7px rgba(255,209,102,.55)) !important;
+}
+
+.gps-example-button[data-gps-state="active"] {
+  color: #08d47a !important;
+}
+
+.gps-example-button[data-gps-state="active"] .gps-example-icon {
+  filter: drop-shadow(0 0 7px rgba(8,212,122,.48)) !important;
+}
+
+.gps-example-button[data-gps-state="outside"] {
+  color: #ff8a00 !important;
+}
+
+.gps-example-button[data-gps-state="error"] {
+  color: #ff5d6c !important;
+}
+
+@keyframes gpsExamplePulse {
+  0%, 100% { transform: rotate(0deg) translate(1px, -1px) scale(.94); opacity: .78; }
+  50% { transform: rotate(0deg) translate(1px, -1px) scale(1.08); opacity: 1; }
+}
+
+/* Mobile mais parecido com o print */
+@media (max-width: 720px) {
+  .gps-example-button,
+  .locate-button.gps-example-button,
+  .gps-nav-button.gps-example-button {
+    right: 18px !important;
+    bottom: calc(92px + env(safe-area-inset-bottom)) !important;
+    width: 72px !important;
+    height: 72px !important;
+    min-width: 72px !important;
+    min-height: 72px !important;
+  }
+
+  .gps-example-icon {
+    width: 41px !important;
+    height: 41px !important;
+    stroke-width: 5 !important;
+  }
+}
+
+@media (max-width: 390px) {
+  .gps-example-button,
+  .locate-button.gps-example-button,
+  .gps-nav-button.gps-example-button {
+    right: 16px !important;
+    width: 68px !important;
+    height: 68px !important;
+    min-width: 68px !important;
+    min-height: 68px !important;
+  }
+
+  .gps-example-icon {
+    width: 39px !important;
+    height: 39px !important;
+  }
+}
+
+
+/* ===== CampoGeo V6.0 — Mobile organizado + GPS fixo ===== */
+
+/* GPS fixo de verdade: nunca some */
+#locateBtn.gps-example-button,
+#locateBtn.gps-nav-button,
+#locateBtn.locate-button {
+  display: grid !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  position: fixed !important;
+  z-index: 999 !important;
+  right: 16px !important;
+  bottom: calc(86px + env(safe-area-inset-bottom)) !important;
+  transform: none !important;
+}
+
+/* evita conflitos antigos */
+#locateBtn[hidden],
+#locateBtn.gps-example-button[hidden] {
+  display: grid !important;
+}
+
+/* feedback de toque sem sumir */
+#locateBtn.gps-example-button:active {
+  transform: scale(.94) !important;
+}
+
+#locateBtn.gps-example-button.gps-bounce {
+  animation: gpsExampleBounce .34s ease !important;
+}
+
+/* organização geral do mapa */
+.map-screen.active {
+  position: fixed !important;
+  inset: 0 !important;
+  height: 100dvh !important;
+  width: 100vw !important;
+  overflow: hidden !important;
+  background: #07120b !important;
+}
+
+/* topo mais compacto e limpo */
+.mobile-map-header {
+  position: relative !important;
+  z-index: 180 !important;
+}
+
+/* rodapé mais organizado */
+.native-map-bar,
+.map-action-bar.has-color-picker,
+.map-action-bar {
+  z-index: 170 !important;
+}
+
+/* pílula de coordenada fica acima da barra, não em cima dos botões */
+.map-coord-pill {
+  z-index: 165 !important;
+  pointer-events: none !important;
+}
+
+/* MOBILE */
+@media (max-width: 720px) {
+  .mobile-map-header,
+  .map-topbar {
+    height: calc(58px + env(safe-area-inset-top)) !important;
+    min-height: calc(58px + env(safe-area-inset-top)) !important;
+    padding: env(safe-area-inset-top) 10px 6px !important;
+    display: grid !important;
+    grid-template-columns: 48px 1fr 48px !important;
+    align-items: center !important;
+    background: rgba(7, 17, 11, .96) !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: 0 8px 22px rgba(0,0,0,.26) !important;
+  }
+
+  .mobile-map-header::after,
+  .map-topbar::after {
+    content: "ⓘ";
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    justify-self: end;
+    border-radius: 999px;
+    color: var(--primary);
+    font-size: 23px;
+    opacity: .9;
+  }
+
+  #backBtn {
+    width: 42px !important;
+    min-width: 42px !important;
+    height: 42px !important;
+    min-height: 42px !important;
+    border-radius: 999px !important;
+    background: rgba(255,255,255,.06) !important;
+    border: 1px solid rgba(255,255,255,.08) !important;
+    color: var(--primary) !important;
+    box-shadow: none !important;
+  }
+
+  .mobile-map-title,
+  .map-title {
+    min-width: 0 !important;
+    text-align: center !important;
+    display: grid !important;
+    justify-items: center !important;
+  }
+
+  .mobile-map-title strong,
+  .map-title strong {
+    max-width: 220px !important;
+    font-size: 15px !important;
+    line-height: 1.15 !important;
+    font-weight: 950 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  .mobile-map-title span,
+  .map-title span {
+    max-width: 220px !important;
+    font-size: 10px !important;
+    line-height: 1.1 !important;
+    opacity: .72 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  .map-wrapper {
+    height: calc(100dvh - (58px + env(safe-area-inset-top))) !important;
+  }
+
+  /* GPS fixo igual exemplo, acima da barra, sem sumir */
+  #locateBtn.gps-example-button,
+  #locateBtn.gps-nav-button,
+  #locateBtn.locate-button {
+    width: 64px !important;
+    min-width: 64px !important;
+    height: 64px !important;
+    min-height: 64px !important;
+    right: 14px !important;
+    bottom: calc(82px + env(safe-area-inset-bottom)) !important;
+    background: #151515 !important;
+    border-radius: 999px !important;
+    box-shadow:
+      0 14px 26px rgba(0,0,0,.42),
+      0 4px 8px rgba(0,0,0,.25),
+      inset 0 1px 0 rgba(255,255,255,.045) !important;
+  }
+
+  #locateBtn .gps-example-icon {
+    width: 38px !important;
+    height: 38px !important;
+    stroke-width: 5.1 !important;
+  }
+
+  /* Barra inferior: ícones bem distribuídos */
+  .native-map-bar,
+  .map-action-bar.has-color-picker,
+  .map-action-bar {
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    transform: none !important;
+    width: 100% !important;
+    height: calc(62px + env(safe-area-inset-bottom)) !important;
+    min-height: calc(62px + env(safe-area-inset-bottom)) !important;
+    padding: 7px 12px calc(7px + env(safe-area-inset-bottom)) !important;
+    border-radius: 0 !important;
+    display: grid !important;
+    grid-template-columns: 56px 56px 56px 56px !important;
+    justify-content: space-between !important;
+    align-items: start !important;
+    gap: 0 !important;
+    background: rgba(5, 17, 9, .98) !important;
+    border: 0 !important;
+    border-top: 1px solid rgba(255,255,255,.10) !important;
+    box-shadow: 0 -12px 26px rgba(0,0,0,.30) !important;
+  }
+
+  .map-tool-button {
+    width: 52px !important;
+    min-width: 52px !important;
+    height: 48px !important;
+    min-height: 48px !important;
+    border-radius: 999px !important;
+    background: transparent !important;
+    color: var(--primary) !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    display: grid !important;
+    place-items: center !important;
+    padding: 0 !important;
+  }
+
+  .map-tool-button.active {
+    background: rgba(40,199,111,.14) !important;
+  }
+
+  .map-tool-button.danger-tool {
+    color: #ff8f9a !important;
+  }
+
+  .map-tool-icon {
+    width: 39px !important;
+    height: 39px !important;
+    border-radius: 999px !important;
+    display: grid !important;
+    place-items: center !important;
+    background: rgba(255,255,255,.045) !important;
+    font-size: 23px !important;
+  }
+
+  .map-tool-label {
+    display: none !important;
+  }
+
+  /* Coordenada central, sem bater no GPS */
+  .map-coord-pill {
+    bottom: calc(12px + env(safe-area-inset-bottom)) !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    min-width: 180px !important;
+    max-width: calc(100% - 180px) !important;
+    height: 36px !important;
+    min-height: 36px !important;
+    padding: 0 12px !important;
+    font-size: 12px !important;
+    border-radius: 999px !important;
+    background: rgba(43, 45, 43, .94) !important;
+    color: #f4fff7 !important;
+  }
+
+  /* Aba de cor pequena acima do primeiro botão */
+  .pin-color-picker {
+    position: absolute !important;
+    left: 12px !important;
+    bottom: calc(100% + 8px) !important;
+    transform: translateY(6px) scale(.97) !important;
+    width: auto !important;
+    min-height: 0 !important;
+    max-width: calc(100vw - 24px) !important;
+    padding: 8px !important;
+    gap: 6px !important;
+    border-radius: 999px !important;
+    background: rgba(12, 14, 13, .96) !important;
+    border: 1px solid rgba(255,255,255,.13) !important;
+    box-shadow: 0 12px 28px rgba(0,0,0,.38) !important;
+    z-index: 1000 !important;
+  }
+
+  .map-action-bar.pin-active .pin-color-picker {
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+    transform: translateY(0) scale(1) !important;
+  }
+
+  .pin-color-title {
+    display: none !important;
+  }
+
+  .pin-color-dot {
+    width: 24px !important;
+    height: 24px !important;
+    min-width: 24px !important;
+    min-height: 24px !important;
+  }
+
+  /* Toast pequeno acima da barra */
+  .toast {
+    bottom: calc(72px + env(safe-area-inset-bottom)) !important;
+    max-width: calc(100% - 118px) !important;
+    padding: 7px 10px !important;
+    font-size: 11px !important;
+    border-radius: 999px !important;
+    z-index: 1001 !important;
+  }
+}
+
+/* telas estreitas: coordenada encurta */
+@media (max-width: 390px) {
+  .mobile-map-title strong,
+  .map-title strong {
+    max-width: 170px !important;
+  }
+
+  .mobile-map-title span,
+  .map-title span {
+    max-width: 170px !important;
+  }
+
+  .map-coord-pill {
+    min-width: 154px !important;
+    max-width: calc(100% - 158px) !important;
+    font-size: 11px !important;
+  }
+
+  #locateBtn.gps-example-button,
+  #locateBtn.gps-nav-button,
+  #locateBtn.locate-button {
+    width: 60px !important;
+    min-width: 60px !important;
+    height: 60px !important;
+    min-height: 60px !important;
+    right: 12px !important;
+  }
+
+  #locateBtn .gps-example-icon {
+    width: 35px !important;
+    height: 35px !important;
+  }
+}
+
+
+/* ===== CampoGeo V6.1 — GPS alinhado + sem "Sem posição" ===== */
+
+/* Esconde a pílula quando não há coordenada real */
+.map-coord-pill {
+  display: none !important;
+}
+
+.map-coord-pill.has-value {
+  display: grid !important;
+}
+
+/* GPS perfeitamente centralizado */
+#locateBtn.gps-example-button,
+#locateBtn.gps-nav-button,
+#locateBtn.locate-button {
+  display: grid !important;
+  place-items: center !important;
+  align-items: center !important;
+  justify-items: center !important;
+  overflow: visible !important;
+}
+
+/* Remove conflitos de setas antigas */
+#locateBtn .gps-nav-arrow,
+#locateBtn .gps-indicator-core,
+#locateBtn .locate-dot,
+#locateBtn span:not(.gps-nav-arrow):not(.gps-indicator-core):not(.locate-dot) {
+  display: none !important;
+}
+
+/* SVG novo: centralizado e sem deslocamento */
+#locateBtn .gps-example-icon {
+  display: block !important;
+  width: 40px !important;
+  height: 40px !important;
+  margin: 0 !important;
+  transform: translate(0, 0) !important;
+  transform-origin: center center !important;
+  fill: none !important;
+  stroke: currentColor !important;
+  stroke-width: 2.15 !important;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
+  color: currentColor !important;
+  filter:
+    drop-shadow(0 0 5px rgba(8,185,111,.38))
+    drop-shadow(0 1px 0 rgba(0,0,0,.30)) !important;
+}
+
+/* centralização do botão no canto */
+@media (max-width: 720px) {
+  #locateBtn.gps-example-button,
+  #locateBtn.gps-nav-button,
+  #locateBtn.locate-button {
+    right: 14px !important;
+    bottom: calc(82px + env(safe-area-inset-bottom)) !important;
+    width: 62px !important;
+    min-width: 62px !important;
+    height: 62px !important;
+    min-height: 62px !important;
+  }
+
+  #locateBtn .gps-example-icon {
+    width: 38px !important;
+    height: 38px !important;
+    stroke-width: 2.1 !important;
+  }
+
+  /* como não tem "Sem posição", a barra fica mais limpa */
+  .native-map-bar,
+  .map-action-bar.has-color-picker,
+  .map-action-bar {
+    padding-right: 92px !important;
+  }
+
+  .map-coord-pill.has-value {
+    bottom: calc(12px + env(safe-area-inset-bottom)) !important;
+    min-width: 180px !important;
+    max-width: calc(100% - 190px) !important;
+  }
+}
+
+@media (max-width: 390px) {
+  #locateBtn.gps-example-button,
+  #locateBtn.gps-nav-button,
+  #locateBtn.locate-button {
+    width: 58px !important;
+    min-width: 58px !important;
+    height: 58px !important;
+    min-height: 58px !important;
+    right: 12px !important;
+  }
+
+  #locateBtn .gps-example-icon {
+    width: 35px !important;
+    height: 35px !important;
+  }
+}
+
+
+/* ===== CampoGeo V6.2 — Marcar sem ficar ativo/travado ===== */
+
+/* O botão Marcar não fica verde/ativo. Ele fica igual aos outros. */
+#pinModeBtn.active,
+#pinModeBtn.map-tool-button.active {
+  background: transparent !important;
+  color: var(--primary) !important;
+  box-shadow: none !important;
+}
+
+#pinModeBtn.active .map-tool-icon,
+#pinModeBtn.map-tool-button.active .map-tool-icon {
+  background: rgba(255,255,255,.045) !important;
+}
+
+/* Quando a aba de cores estiver aberta, só dá um brilho leve, sem botão verde */
+.map-action-bar.pin-active #pinModeBtn {
+  color: #8ff4ae !important;
+}
+
+.map-action-bar.pin-active #pinModeBtn .map-tool-icon {
+  background: rgba(40,199,111,.09) !important;
+}
+
+/* Some com qualquer aviso visual antigo do modo marcar */
+.map-wrapper.pin-mode::after {
+  display: none !important;
+  content: none !important;
+}
+
+
+/* ===== CampoGeo V6.3 — Marcar normal, sem ficar verde ===== */
+
+/* O botão Marcar nunca fica verde preenchido */
+#pinModeBtn,
+#pinModeBtn.active,
+#pinModeBtn.map-tool-button.active {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+#pinModeBtn .map-tool-icon,
+#pinModeBtn.active .map-tool-icon,
+#pinModeBtn.map-tool-button.active .map-tool-icon {
+  background: rgba(255,255,255,.045) !important;
+}
+
+/* Quando o modo marcar está ligado, só muda a cor do ícone, sem preencher o botão */
+.map-action-bar.pin-mode-on #pinModeBtn,
+.map-action-bar.pin-active #pinModeBtn {
+  color: #8ff4ae !important;
+}
+
+.map-action-bar.pin-mode-on #pinModeBtn .map-tool-icon,
+.map-action-bar.pin-active #pinModeBtn .map-tool-icon {
+  background: rgba(40,199,111,.08) !important;
+}
+
+
+/* ===== CampoGeo V6.4 — Responsivo e organizado ===== */
+
+:root {
+  --cg-max: 1220px;
+  --cg-gap: 14px;
+  --cg-bottom-space: 92px;
+}
+
+/* Base mais estável para PC e celular */
+html, body {
+  width: 100%;
+  overflow-x: hidden;
+}
+
+body:not(.map-open) {
+  padding-left: clamp(10px, 2vw, 18px) !important;
+  padding-right: clamp(10px, 2vw, 18px) !important;
+}
+
+/* Header inicial mais organizado */
+.app-header {
+  width: min(var(--cg-max), 100%) !important;
+  padding: 14px 4px 12px !important;
+  gap: 14px !important;
+}
+
+.header-brand {
+  min-width: 0;
+}
+
+.header-brand-copy h1 {
+  font-size: clamp(30px, 4vw, 48px) !important;
+  line-height: .96;
+}
+
+.header-logo {
+  width: clamp(46px, 6vw, 58px) !important;
+  height: clamp(46px, 6vw, 58px) !important;
+}
+
+/* Status: no PC fica alinhado, no celular vira faixa rolável */
+.status-stack {
+  display: flex !important;
+  gap: 8px !important;
+  align-items: center;
+}
+
+.status-mini {
+  min-width: 96px;
+}
+
+/* Menu inicial: layout melhor em PC */
+.app-shell {
+  width: min(var(--cg-max), 100%) !important;
+  padding-bottom: calc(var(--cg-bottom-space) + env(safe-area-inset-bottom)) !important;
+}
+
+.home-screen.active {
+  display: grid !important;
+  gap: var(--cg-gap) !important;
+}
+
+.hero-card {
+  min-height: 150px !important;
+  padding: clamp(18px, 2.6vw, 28px) !important;
+  align-items: end !important;
+}
+
+.hero-card h2 {
+  font-size: clamp(28px, 4vw, 50px) !important;
+  max-width: 800px !important;
+}
+
+.library-panel {
+  margin-top: 0 !important;
+  padding: clamp(14px, 2vw, 20px) !important;
+}
+
+.section-title {
+  align-items: flex-start !important;
+}
+
+.settings-row {
+  width: min(560px, 100%) !important;
+}
+
+/* Cards de mapa mais limpos e responsivos */
+.map-list {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)) !important;
+  gap: 12px !important;
+}
+
+.map-card {
+  min-width: 0 !important;
+  align-content: start;
+}
+
+.map-card > div:first-child {
+  min-width: 0;
+}
+
+.map-card strong {
+  overflow-wrap: anywhere;
+}
+
+.card-actions {
+  grid-template-columns: minmax(96px, 1.2fr) minmax(96px, 1fr) minmax(72px, .8fr) !important;
+}
+
+.offline-ready-box,
+.empty-state {
+  margin-bottom: 12px;
+}
+
+/* Dock inicial: PC e celular */
+.app-bottom-bar {
+  width: min(620px, calc(100% - 24px)) !important;
+  left: 50% !important;
+  right: auto !important;
+  transform: translateX(-50%) !important;
+  bottom: calc(12px + env(safe-area-inset-bottom)) !important;
+}
+
+/* ===== Tela do mapa organizada ===== */
+.map-screen.active {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100dvh !important;
+  overflow: hidden !important;
+  background: #041008 !important;
+  z-index: 100 !important;
+}
+
+.map-screen.active .map-topbar {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  height: calc(58px + env(safe-area-inset-top)) !important;
+  min-height: calc(58px + env(safe-area-inset-top)) !important;
+  padding: env(safe-area-inset-top) 12px 7px !important;
+  display: grid !important;
+  grid-template-columns: 48px minmax(0, 1fr) 48px !important;
+  align-items: center !important;
+  z-index: 220 !important;
+  background: rgba(5, 16, 9, .96) !important;
+  border: 0 !important;
+  border-bottom: 1px solid rgba(255,255,255,.08) !important;
+  border-radius: 0 !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,.26) !important;
+}
+
+.map-screen.active .map-topbar::after {
+  content: "ⓘ";
+  justify-self: end;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  color: var(--primary);
+  font-size: 23px;
+  opacity: .9;
+}
+
+.map-screen.active #backBtn {
+  width: 42px !important;
+  min-width: 42px !important;
+  height: 42px !important;
+  min-height: 42px !important;
+  border-radius: 999px !important;
+  background: rgba(255,255,255,.06) !important;
+  border: 1px solid rgba(255,255,255,.08) !important;
+  color: var(--primary) !important;
+  box-shadow: none !important;
+}
+
+.map-screen.active .map-title {
+  min-width: 0 !important;
+  text-align: center !important;
+  display: grid !important;
+  justify-items: center !important;
+}
+
+.map-screen.active .map-title strong,
+.map-screen.active .map-title span {
+  min-width: 0 !important;
+  max-width: min(620px, calc(100vw - 130px)) !important;
+  overflow: hidden !important;
+  white-space: nowrap !important;
+  text-overflow: ellipsis !important;
+}
+
+.map-screen.active .map-title strong {
+  font-size: clamp(14px, 2.4vw, 17px) !important;
+  font-weight: 950 !important;
+}
+
+.map-screen.active .map-title span {
+  font-size: 11px !important;
+  opacity: .72 !important;
+}
+
+/* Área do mapa sempre ocupa o espaço certo */
+.map-screen.active .map-wrapper {
+  position: fixed !important;
+  inset: calc(58px + env(safe-area-inset-top)) 0 0 0 !important;
+  height: auto !important;
+  width: 100vw !important;
+  background: #041008 !important;
+  overflow: hidden !important;
+}
+
+/* Ferramentas do mapa no PC: barra compacta e central, sem ocupar largura toda */
+.map-screen.active .map-action-bar {
+  position: fixed !important;
+  left: 50% !important;
+  right: auto !important;
+  bottom: calc(20px + env(safe-area-inset-bottom)) !important;
+  transform: translateX(-50%) !important;
+  width: auto !important;
+  max-width: calc(100% - 170px) !important;
+  min-height: 58px !important;
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(86px, auto)) !important;
+  gap: 8px !important;
+  padding: 8px !important;
+  border-radius: 26px !important;
+  background: rgba(8, 20, 13, .92) !important;
+  border: 1px solid rgba(255,255,255,.12) !important;
+  box-shadow: 0 18px 44px rgba(0,0,0,.38), inset 0 1px 0 rgba(255,255,255,.08) !important;
+  backdrop-filter: blur(18px) !important;
+  z-index: 210 !important;
+}
+
+.map-screen.active .map-tool-button {
+  min-width: 86px !important;
+  height: 46px !important;
+  min-height: 46px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  border-radius: 18px !important;
+  padding: 0 12px !important;
+}
+
+.map-screen.active .map-tool-icon {
+  width: 30px !important;
+  height: 30px !important;
+  border-radius: 13px !important;
+}
+
+.map-screen.active .map-tool-label {
+  display: inline !important;
+  font-size: 12px !important;
+  font-weight: 950 !important;
+}
+
+/* GPS fixo no PC */
+.map-screen.active #locateBtn.gps-example-button {
+  position: fixed !important;
+  right: 24px !important;
+  bottom: calc(28px + env(safe-area-inset-bottom)) !important;
+  z-index: 215 !important;
+  display: grid !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Coordenada só aparece quando tiver valor */
+.map-coord-pill {
+  display: none !important;
+}
+
+.map-coord-pill.has-value {
+  display: grid !important;
+  position: fixed !important;
+  left: 50% !important;
+  bottom: calc(88px + env(safe-area-inset-bottom)) !important;
+  transform: translateX(-50%) !important;
+  z-index: 212 !important;
+}
+
+/* Aba de cores no PC */
+.pin-color-picker {
+  position: absolute !important;
+  left: 8px !important;
+  bottom: calc(100% + 8px) !important;
+  width: max-content !important;
+  max-width: calc(100vw - 24px) !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+.map-action-bar.pin-active .pin-color-picker {
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
+
+/* Tablets */
+@media (max-width: 980px) {
+  .app-header {
+    align-items: flex-start !important;
+    flex-wrap: wrap !important;
+  }
+
+  .status-stack {
+    width: 100%;
+    justify-content: flex-start !important;
+    overflow-x: auto;
+    padding-bottom: 2px;
+    scrollbar-width: none;
+  }
+
+  .status-stack::-webkit-scrollbar {
+    display: none;
+  }
+
+  .status-mini {
+    flex: 0 0 auto;
+  }
+
+  .section-title {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+  }
+
+  .settings-row {
+    justify-self: stretch !important;
+  }
+
+  .map-screen.active .map-action-bar {
+    max-width: calc(100% - 145px) !important;
+  }
+
+  .map-screen.active .map-tool-button {
+    min-width: 72px !important;
+    padding: 0 9px !important;
+  }
+}
+
+/* Celular */
+@media (max-width: 720px) {
+  body:not(.map-open) {
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+  }
+
+  .app-header {
+    padding: 10px 0 10px !important;
+  }
+
+  .header-brand {
+    width: 100%;
+  }
+
+  .header-brand-copy h1 {
+    font-size: 34px !important;
+  }
+
+  .header-logo {
+    width: 48px !important;
+    height: 48px !important;
+  }
+
+  .status-stack {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 7px !important;
+    overflow: visible;
+  }
+
+  .status-mini {
+    min-width: 0 !important;
+    padding: 8px 8px !important;
+  }
+
+  .status-copy small {
+    font-size: 8px !important;
+  }
+
+  .status-copy strong {
+    font-size: 10px !important;
+  }
+
+  .hero-card {
+    min-height: 128px !important;
+    padding: 18px !important;
+    border-radius: 24px !important;
+  }
+
+  .hero-card h2 {
+    font-size: 31px !important;
+    letter-spacing: -.05em !important;
+  }
+
+  .library-panel {
+    padding: 13px !important;
+    border-radius: 24px !important;
+  }
+
+  .settings-row {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+
+  .quality-card,
+  .danger-action {
+    min-height: 50px !important;
+    border-radius: 17px !important;
+  }
+
+  .map-list {
+    grid-template-columns: 1fr !important;
+  }
+
+  .map-card {
+    border-radius: 20px !important;
+    padding: 13px !important;
+  }
+
+  .card-actions {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .card-actions .primary-button {
+    grid-column: 1 / -1 !important;
+  }
+
+  .app-bottom-bar {
+    width: calc(100% - 18px) !important;
+    min-height: 66px !important;
+    padding: 8px !important;
+    border-radius: 25px !important;
+  }
+
+  .dock-action {
+    min-height: 52px !important;
+    border-radius: 19px !important;
+  }
+
+  /* mapa no celular */
+  .map-screen.active .map-topbar {
+    grid-template-columns: 48px minmax(0, 1fr) 48px !important;
+    height: calc(56px + env(safe-area-inset-top)) !important;
+    min-height: calc(56px + env(safe-area-inset-top)) !important;
+    padding: env(safe-area-inset-top) 8px 6px !important;
+  }
+
+  .map-screen.active .map-title strong {
+    font-size: 14px !important;
+    max-width: calc(100vw - 130px) !important;
+  }
+
+  .map-screen.active .map-title span {
+    font-size: 10px !important;
+    max-width: calc(100vw - 130px) !important;
+  }
+
+  .map-screen.active .map-wrapper {
+    inset: calc(56px + env(safe-area-inset-top)) 0 0 0 !important;
+  }
+
+  /* Barra inferior mobile: 4 botões alinhados, sem texto */
+  .map-screen.active .map-action-bar {
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    transform: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: calc(62px + env(safe-area-inset-bottom)) !important;
+    height: calc(62px + env(safe-area-inset-bottom)) !important;
+    grid-template-columns: repeat(4, 54px) !important;
+    justify-content: space-between !important;
+    align-items: start !important;
+    gap: 0 !important;
+    padding: 7px 12px calc(7px + env(safe-area-inset-bottom)) !important;
+    border-radius: 0 !important;
+    border-left: 0 !important;
+    border-right: 0 !important;
+    border-bottom: 0 !important;
+    background: rgba(5, 17, 9, .98) !important;
+  }
+
+  .map-screen.active .map-tool-button {
+    width: 52px !important;
+    min-width: 52px !important;
+    height: 48px !important;
+    min-height: 48px !important;
+    padding: 0 !important;
+    border-radius: 999px !important;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+  }
+
+  .map-screen.active .map-tool-icon {
+    width: 39px !important;
+    height: 39px !important;
+    border-radius: 999px !important;
+    font-size: 23px !important;
+    background: rgba(255,255,255,.045) !important;
+  }
+
+  .map-screen.active .map-tool-label {
+    display: none !important;
+  }
+
+  .map-screen.active #locateBtn.gps-example-button {
+    right: 14px !important;
+    bottom: calc(82px + env(safe-area-inset-bottom)) !important;
+    width: 62px !important;
+    min-width: 62px !important;
+    height: 62px !important;
+    min-height: 62px !important;
+  }
+
+  .map-screen.active #locateBtn .gps-example-icon {
+    width: 38px !important;
+    height: 38px !important;
+  }
+
+  .map-coord-pill.has-value {
+    bottom: calc(72px + env(safe-area-inset-bottom)) !important;
+    max-width: calc(100% - 100px) !important;
+    min-width: auto !important;
+    height: 34px !important;
+    min-height: 34px !important;
+    padding: 0 12px !important;
+    font-size: 11px !important;
+  }
+
+  .pin-color-picker {
+    left: 12px !important;
+    bottom: calc(100% + 8px) !important;
+    padding: 8px !important;
+    border-radius: 999px !important;
+  }
+
+  .pin-color-title {
+    display: none !important;
+  }
+
+  .pin-color-dot {
+    width: 24px !important;
+    height: 24px !important;
+    min-width: 24px !important;
+    min-height: 24px !important;
+  }
+}
+
+/* Celular pequeno */
+@media (max-width: 390px) {
+  .header-brand-copy h1 {
+    font-size: 30px !important;
+  }
+
+  .hero-card h2 {
+    font-size: 28px !important;
+  }
+
+  .map-screen.active .map-action-bar {
+    grid-template-columns: repeat(4, 48px) !important;
+    padding-left: 9px !important;
+    padding-right: 9px !important;
+  }
+
+  .map-screen.active .map-tool-button {
+    width: 48px !important;
+    min-width: 48px !important;
+  }
+
+  .map-screen.active #locateBtn.gps-example-button {
+    right: 12px !important;
+    width: 58px !important;
+    min-width: 58px !important;
+    height: 58px !important;
+    min-height: 58px !important;
+  }
+}

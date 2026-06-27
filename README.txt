@@ -1,18 +1,20 @@
-# CampoGeo V5.4 — Mobile mais limpo
+# CampoGeo V6.4 — Responsivo e organizado
 
-Melhorias para celular:
-- Menos coisa cobrindo o mapa.
-- Botão Localizar virou botão redondo pequeno.
-- Barra de ferramentas ficou mais baixa e compacta.
-- Cores aparecem só quando o modo Alfinete está ligado.
-- Marcador ficou maior que o ponto anterior, mas sem fundo branco.
-- Aviso “toque no mapa” ficou menor.
-- Importar/Exportar KMZ mantido.
-- Botão Limpar mantido.
-- Offline mantido.
+Foco desta versão:
+- Melhor organização no menu inicial.
+- Melhor responsividade para PC, tablet e celular.
+- Header inicial mais limpo.
+- Status organizados.
+- Cards de mapas em grade no PC e em coluna no celular.
+- Barra inicial de ações ajustada para cada tela.
+- Tela do mapa ocupa melhor o espaço.
+- Topo do mapa mais compacto.
+- Barra de ferramentas do mapa organizada no PC e no celular.
+- GPS fixo no canto sem sumir.
+- Coordenada só aparece quando tiver valor.
+- Mantidas as funções: alfinete, cores, KMZ, limpar, offline e renderização.
 
-Como usar:
-1. Abra o mapa.
-2. Aperte Alfinete.
-3. Escolha a cor que aparece acima da barra.
-4. Toque no mapa.
+Depois de subir:
+1. Aperte Cache.
+2. Recarregue.
+3. Teste no PC e no celular.

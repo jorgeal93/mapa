@@ -87,6 +87,7 @@ const ui = {
   clearPinsBtn: $("#clearPinsBtn"),
   pinColorPicker: $("#pinColorPicker"),
   mapActionBar: $(".map-action-bar"),
+  mapCoordPill: $("#mapCoordPill"),
   kmzInput: $("#kmzInput"),
 
   progressOverlay: $("#progressOverlay"),
@@ -320,7 +321,13 @@ function handlePinColorChoice(event) {
 
   selectedPinColor = color;
   updatePinColorUi();
-  showToast("Cor do alfinete selecionada.");
+
+  // Fecha só a aba de cores. O modo marcar continua ligado.
+  pinMode = true;
+  ui.pinModeBtn?.classList.remove("active");
+  ui.mapWrapper?.classList.add("pin-mode");
+  ui.mapActionBar?.classList.add("pin-mode-on");
+  ui.mapActionBar?.classList.remove("pin-active");
 }
 
 function updatePinColorUi() {
@@ -401,11 +408,31 @@ async function actionBackHome() {
   ui.pinModeBtn?.classList.remove("active");
   ui.mapWrapper?.classList.remove("pin-mode");
   ui.mapActionBar?.classList.remove("pin-active");
+  ui.mapActionBar?.classList.remove("pin-mode-on");
   await renderMapList();
 }
 
+
+
+function forceGpsButtonVisible() {
+  if (!ui.locateBtn) return;
+  ui.locateBtn.hidden = false;
+  ui.locateBtn.style.display = "grid";
+  ui.locateBtn.style.visibility = "visible";
+  ui.locateBtn.style.opacity = "1";
+}
+
+function flashGpsButton() {
+  if (!ui.locateBtn) return;
+  forceGpsButtonVisible();
+  ui.locateBtn.classList.remove("gps-bounce");
+  void ui.locateBtn.offsetWidth;
+  ui.locateBtn.classList.add("gps-bounce");
+  setTimeout(() => ui.locateBtn?.classList.remove("gps-bounce"), 380);
+}
+
 function actionLocate() {
-  flashButton("locateBtn");
+  flashGpsButton();
   handleLocateClick();
 }
 
@@ -416,10 +443,12 @@ function actionTogglePinMode() {
   }
 
   pinMode = !pinMode;
-  ui.pinModeBtn?.classList.toggle("active", pinMode);
+
+  // Mantém a função normal, mas sem deixar o botão verde/preenchido.
+  ui.pinModeBtn?.classList.remove("active");
   ui.mapWrapper?.classList.toggle("pin-mode", pinMode);
+  ui.mapActionBar?.classList.toggle("pin-mode-on", pinMode);
   ui.mapActionBar?.classList.toggle("pin-active", pinMode);
-  showToast(pinMode ? "Alfinete ligado: escolha a cor e toque no mapa." : "Alfinete desligado.");
 }
 
 function actionOpenKmzImporter() {
@@ -1119,7 +1148,7 @@ async function openMap(mapId) {
     document.body.classList.add("map-open");
     ui.homeScreen.classList.remove("active");
     ui.mapScreen.classList.add("active");
-    ui.currentMapName.textContent = currentMap.name;
+    ui.currentMapName.textContent = cleanMapTitle(currentMap.name);
 
     await nextFrame();
     await loadRealMapImage(currentMap);
@@ -1172,6 +1201,10 @@ async function loadRealMapImage(map) {
   ui.gpsLayer.style.height = `${imageNaturalSize.height}px`;
 
   renderPins();
+  updateMapCoordPill("");
+  forceGpsButtonVisible();
+  setGpsIndicatorState("idle");
+  autoStartGpsForMap();
 }
 
 function fitMapToScreen() {
@@ -1206,6 +1239,7 @@ function cleanupCurrentMap() {
   ui.pinModeBtn?.classList.remove("active");
   ui.mapWrapper?.classList.remove("pin-mode");
   ui.mapActionBar?.classList.remove("pin-active");
+  ui.mapActionBar?.classList.remove("pin-mode-on");
   imageNaturalSize = { width: 0, height: 0 };
   displaySize = { width: 0, height: 0 };
   zoom = 1;
@@ -1382,6 +1416,7 @@ function handleMapClickForPin(event) {
   addPinAtClientPoint(event.clientX, event.clientY);
 }
 
+
 async function addPinAtClientPoint(clientX, clientY) {
   if (!currentMap) return;
 
@@ -1413,7 +1448,12 @@ async function addPinAtClientPoint(clientX, clientY) {
   await saveCurrentMapPins();
   renderPins();
 
-  showToast(geo ? "Alfinete salvo com coordenada." : "Alfinete salvo. KMZ precisa de GeoPDF.");
+  // Mantém o modo marcar ligado, mas fecha a aba de cores.
+  ui.pinModeBtn?.classList.remove("active");
+  ui.mapWrapper?.classList.add("pin-mode");
+  ui.mapActionBar?.classList.add("pin-mode-on");
+  ui.mapActionBar?.classList.remove("pin-active");
+  // Sem aviso visual para não poluir o mapa.
 }
 
 function clientToMapPixel(clientX, clientY) {
@@ -1885,7 +1925,56 @@ function decodeXml(value) {
   return textarea.value;
 }
 
-async function handleLocateClick() {
+
+
+function setGpsIndicatorState(state = "idle") {
+  if (!ui.locateBtn) return;
+
+  ui.locateBtn.dataset.gpsState = state;
+  ui.locateBtn.classList.remove("locating", "active", "outside", "error");
+
+  if (["locating", "active", "outside", "error"].includes(state)) {
+    ui.locateBtn.classList.add(state);
+  }
+}
+
+function autoStartGpsForMap() {
+  if (!currentMap) return;
+  if (gpsWatchId !== null) return;
+
+  setTimeout(() => {
+    if (!currentMap || gpsWatchId !== null) return;
+    handleLocateClick({ silent: true }).catch?.(() => null);
+  }, 650);
+}
+
+
+function cleanMapTitle(name) {
+  const raw = String(name || "Mapa");
+  return raw
+    .replace(/\.pdf$/i, "")
+    .replace(/[_-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function updateMapCoordPill(text, mode = "default") {
+  if (!ui.mapCoordPill) return;
+
+  const value = String(text || "").trim();
+  const hasValue = value && value !== "Sem posição";
+
+  ui.mapCoordPill.textContent = hasValue ? value : "";
+  ui.mapCoordPill.dataset.mode = mode;
+  ui.mapCoordPill.classList.toggle("has-value", Boolean(hasValue));
+}
+
+function formatCoordPill(lat, lon) {
+  if (!Number.isFinite(Number(lat)) || !Number.isFinite(Number(lon))) return "Sem posição";
+  return `${Number(lat).toFixed(6)}, ${Number(lon).toFixed(6)}`;
+}
+
+async function handleLocateClick(options = {}) {
   const now = Date.now();
   if (now - lastLocateTapAt < 650) return;
   lastLocateTapAt = now;
@@ -1895,13 +1984,15 @@ async function handleLocateClick() {
     return;
   }
 
-  updateLocateButton("locating", "Localizando");
+  updateLocateButton("locating", "GPS");
+  setGpsIndicatorState("locating");
   showGpsDebug("<strong>Buscando GPS...</strong><br>Se aparecer permissão, toque em Permitir.", "waiting");
   updateGpsUi("waiting", "Buscando GPS...");
 
   try {
     const position = await getGpsPositionNow();
     setCurrentGps(position);
+    setGpsIndicatorState("active");
 
     if (gpsWatchId === null) {
       try {
@@ -2279,10 +2370,37 @@ function updateGpsUi(state = "stopped", message = "") {
   if (value) value.textContent = labels[state] || "GPS";
 }
 
-function updateLocateButton(state = "", text = "Localizar") {
-  ui.locateBtn.classList.remove("active", "locating", "outside");
-  if (state) ui.locateBtn.classList.add(state);
-  ui.locateBtn.textContent = text;
+function updateLocateButton(state, label) {
+  if (!ui.locateBtn) return;
+  forceGpsButtonVisible();
+
+  ui.locateBtn.dataset.state = state || "";
+  ui.locateBtn.title = label || "GPS";
+
+  if (ui.locateBtn.classList.contains("gps-example-button")) {
+    if (!ui.locateBtn.querySelector(".gps-example-icon")) {
+      ui.locateBtn.innerHTML = `
+        <svg class="gps-example-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 2.8 4.6 20.1c-.18.42.25.84.66.62L12 17.2l6.74 3.52c.41.22.84-.2.66-.62L12 2.8Z"/>
+        </svg>`;
+    }
+    return;
+  }
+
+  if (ui.locateBtn.classList.contains("gps-nav-button")) {
+    if (!ui.locateBtn.querySelector(".gps-nav-arrow")) {
+      ui.locateBtn.innerHTML = `<span class="gps-nav-arrow" aria-hidden="true"></span>`;
+    }
+    return;
+  }
+
+  if (ui.locateBtn.classList.contains("gps-indicator")) {
+    const core = ui.locateBtn.querySelector(".gps-indicator-core");
+    if (core) core.textContent = "⌖";
+    return;
+  }
+
+  ui.locateBtn.innerHTML = `<span class="locate-dot">⌖</span><span>${label || "Localizar"}</span>`;
 }
 
 function showGpsDebug(message, type = "") {
