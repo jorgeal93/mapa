@@ -11,15 +11,15 @@
   <meta name="description" content="CampoGeo - mapas offline com GPS para campo." />
   <title>CampoGeo</title>
   <link rel="manifest" href="./manifest.json" />
-  <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png?v=4.7" />
-  <link rel="apple-touch-icon" href="./apple-touch-icon.png?v=4.7" />
+  <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png?v=4.8" />
+  <link rel="apple-touch-icon" href="./apple-touch-icon.png?v=4.8" />
   <link rel="stylesheet" href="./style.css" />
 </head>
 
 <body class="mobile-ready app-loading">
   <div class="splash-screen" id="splashScreen">
     <div class="splash-card">
-      <img class="splash-logo" src="./campogeo-logo.png?v=4.7" alt="CampoGeo" />
+      <img class="splash-logo" src="./campogeo-logo.png?v=4.8" alt="CampoGeo" />
       <div class="splash-copy">
         <strong>CampoGeo</strong>
         <span>Mapas offline para campo</span>
@@ -30,7 +30,7 @@
 
   <header class="app-header">
     <div class="header-brand">
-      <img class="header-logo" src="./campogeo-logo.png?v=4.7" alt="CampoGeo" />
+      <img class="header-logo" src="./campogeo-logo.png?v=4.8" alt="CampoGeo" />
       <div class="header-brand-copy">
         <p class="eyebrow">CAMPOGEO</p>
         <h1>CampoGeo</h1>
@@ -95,6 +95,14 @@
         <div class="empty-state" id="emptyState">
           <strong>Nenhum mapa salvo ainda.</strong>
           <span>Importe um PDF para começar.</span>
+        </div>
+
+        <div class="offline-ready-box" id="offlineReadyBox">
+          <span class="offline-ready-dot"></span>
+          <div>
+            <strong id="offlineReadyTitle">Preparando offline...</strong>
+            <small id="offlineReadyText">Abra uma vez online para salvar o app no aparelho.</small>
+          </div>
         </div>
 
         <div class="map-list" id="mapList"></div>

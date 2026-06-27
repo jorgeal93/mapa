@@ -1,18 +1,21 @@
-const CACHE_NAME = "campogeo-v4-7-sem-duplicados";
+const CACHE_NAME = "campogeo-v4-8-offline-reforcado";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./style.css",
   "./script.js",
   "./manifest.json",
+  "./sw.js",
   "./campogeo-logo.png",
+  "./logo-sem-fundo.png",
   "./icon-512.png",
   "./icon-192.png",
   "./apple-touch-icon.png",
   "./icon-96.png",
   "./icon-48.png",
   "./icon-home-512.png",
-  "./icon-home-180.png"
+  "./icon-home-180.png",
+  "./PDFJS_OPCIONAL.txt"
 ];
 
 const PDFJS_ASSETS = [
@@ -47,15 +50,31 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
   const isAppFile = url.origin === location.origin;
 
-  if (isAppFile) {
+  if (event.request.mode === "navigate") {
     event.respondWith(
       fetch(event.request)
         .then((response) => {
           const copy = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy)).catch(() => null);
+          caches.open(CACHE_NAME).then((cache) => cache.put("./index.html", copy)).catch(() => null);
           return response;
         })
-        .catch(() => caches.match(event.request).then((cached) => cached || caches.match("./index.html")))
+        .catch(() => caches.match("./index.html"))
+    );
+    return;
+  }
+
+  if (isAppFile) {
+    event.respondWith(
+      caches.match(event.request).then((cached) => {
+        const network = fetch(event.request)
+          .then((response) => {
+            const copy = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy)).catch(() => null);
+            return response;
+          })
+          .catch(() => cached);
+        return cached || network;
+      })
     );
     return;
   }

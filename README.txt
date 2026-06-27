@@ -1,18 +1,24 @@
-# CampoGeo V4.7 — Sem botões duplicados
+# CampoGeo V4.8 — Offline reforçado
 
-Correção visual:
-- Removido Importar PDF do card principal.
-- Removido Atualizar do topo.
-- Removido Cache do topo.
-- Mantidos apenas uma vez na barra inferior:
-  - Importar
-  - Atualizar
-  - Cache
-- Resetar ficou separado na área de Mapas.
-- Qualidade continua ao lado de Resetar.
+Melhorias:
+- Abre normal mesmo depois de fechar o app.
+- Sempre inicia na tela inicial.
+- Não volta preso em mapa ou tela de progresso.
+- App shell salvo no cache para abrir sem internet.
+- Mapas gerados continuam salvos no IndexedDB.
+- Botão Cache agora atualiza o cache, não apaga o modo offline.
+- Aviso visual mostra se o app está pronto para offline.
 
-Lógica mantida da V4.6:
-- Código limpo.
-- Sem onclick duplicado.
-- Sem funções duplicadas.
-- Renderização Segura / Alta / Ultra.
+Como usar offline:
+1. Abra uma vez com internet.
+2. Importe o PDF.
+3. Escolha qualidade Alta ou Ultra.
+4. Toque em Gerar.
+5. Aguarde finalizar.
+6. Abra o mapa uma vez.
+7. Depois pode usar sem internet.
+
+Importante:
+- Não use Resetar tudo antes de ir para o campo, porque isso apaga os mapas salvos.
+- O botão Cache só atualiza arquivos do app.
+- Se fechar o app, ao abrir de novo ele volta normal na tela inicial.

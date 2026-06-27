@@ -1,14 +1,33 @@
-/* CampoGeo V4.7 Sem botões duplicados
+/* CampoGeo V4.8 Offline reforçado
    - Cria imagem/mapa em alta qualidade a partir do PDF
    - Salva offline no IndexedDB
    - GPS por cima do mapa controlado pelo app
    - Botão Localizar fixo
 */
 
-const DB_NAME = "campogeo-v4-7-db";
+const DB_NAME = "campogeo-v4-8-db";
 const DB_VERSION = 1;
 const MAP_STORE = "maps";
 const ASSET_STORE = "assets";
+
+
+const APP_FILES_TO_CACHE = [
+  "./",
+  "./index.html",
+  "./style.css",
+  "./script.js",
+  "./manifest.json",
+  "./sw.js",
+  "./campogeo-logo.png",
+  "./logo-sem-fundo.png",
+  "./icon-512.png",
+  "./icon-192.png",
+  "./apple-touch-icon.png",
+  "./icon-96.png",
+  "./icon-48.png",
+  "./icon-home-512.png",
+  "./icon-home-180.png",
+];
 
 const PDF_SOURCES = [
   {
@@ -44,6 +63,9 @@ const ui = {
   dockCacheBtn: $("#dockCacheBtn"),
   mapList: $("#mapList"),
   emptyState: $("#emptyState"),
+  offlineReadyBox: $("#offlineReadyBox"),
+  offlineReadyTitle: $("#offlineReadyTitle"),
+  offlineReadyText: $("#offlineReadyText"),
 
   connectionStatus: $("#connectionStatus"),
   engineStatus: $("#engineStatus"),
@@ -107,6 +129,15 @@ let explicitGenerateAllowed = false;
 const splashStartedAt = Date.now();
 
 
+
+function resetStartupUi() {
+  hideProgress();
+  document.body.classList.remove("map-open");
+  ui.mapScreen?.classList.remove("active");
+  ui.homeScreen?.classList.add("active");
+  ui.gpsLayer && (ui.gpsLayer.innerHTML = "");
+}
+
 function hideSplashScreen() {
   if (!ui.splashScreen) return;
   document.body.classList.remove("app-loading");
@@ -130,13 +161,26 @@ function updateAppHeight() {
 
 document.addEventListener("DOMContentLoaded", () => {
   updateAppHeight();
-  hideProgress();
+  resetStartupUi();
   init();
 });
 
 window.addEventListener("resize", updateAppHeight);
 window.visualViewport?.addEventListener("resize", updateAppHeight);
 window.visualViewport?.addEventListener("scroll", updateAppHeight);
+window.addEventListener("pagehide", cleanupBeforeClose);
+window.addEventListener("beforeunload", cleanupBeforeClose);
+
+
+function cleanupBeforeClose() {
+  try {
+    hideProgress();
+    if (gpsWatchId !== null && "geolocation" in navigator) {
+      navigator.geolocation.clearWatch(gpsWatchId);
+      gpsWatchId = null;
+    }
+  } catch {}
+}
 
 async function init() {
   hideProgress();
@@ -146,8 +190,11 @@ async function init() {
     updateConnectionStatus();
     updateEngineStatus(false, "Motor");
     updateGpsUi("stopped", "GPS parado.");
+    updateOfflineReadyUi("checking");
+    await prepareOfflineAppShell();
     await loadPdfJs();
     await renderMapList();
+    await updateOfflineReadyStatus();
     cleanupOldV3Databases();
     registerServiceWorker();
     await finishSplash();
@@ -319,6 +366,7 @@ async function resetEverything() {
       "campogeo-v4-5-db",
       "campogeo-v4-6-db",
       "campogeo-v4-7-db",
+      "campogeo-v4-8-db",
     ];
 
     await Promise.all(dbs.map(deleteDatabaseSafe));
@@ -343,6 +391,72 @@ function deleteDatabaseSafe(name) {
       resolve(false);
     }
   });
+}
+
+
+function updateOfflineReadyUi(state, detail = "") {
+  if (!ui.offlineReadyBox) return;
+
+  ui.offlineReadyBox.classList.remove("ready", "error");
+
+  if (state === "ready") {
+    ui.offlineReadyBox.classList.add("ready");
+    ui.offlineReadyTitle.textContent = "Pronto para offline";
+    ui.offlineReadyText.textContent = detail || "App e mapas salvos abrem sem internet.";
+    return;
+  }
+
+  if (state === "error") {
+    ui.offlineReadyBox.classList.add("error");
+    ui.offlineReadyTitle.textContent = "Offline incompleto";
+    ui.offlineReadyText.textContent = detail || "Abra online uma vez para preparar.";
+    return;
+  }
+
+  ui.offlineReadyTitle.textContent = "Preparando offline...";
+  ui.offlineReadyText.textContent = detail || "Salvando arquivos principais do app.";
+}
+
+async function prepareOfflineAppShell() {
+  if (!("caches" in window)) {
+    updateOfflineReadyUi("error", "Este navegador não suporta cache offline.");
+    return false;
+  }
+
+  try {
+    const cache = await caches.open("campogeo-app-shell-v4-8");
+    await Promise.allSettled(APP_FILES_TO_CACHE.map((file) => cache.add(file)));
+    return true;
+  } catch (error) {
+    console.warn("Falha preparando offline:", error);
+    return false;
+  }
+}
+
+async function updateOfflineReadyStatus() {
+  try {
+    const maps = db ? await getAll(MAP_STORE) : [];
+    const preparedMaps = maps.filter((map) => map.realMap?.blob).length;
+
+    if (!("caches" in window)) {
+      updateOfflineReadyUi("error", "Cache offline não disponível neste navegador.");
+      return;
+    }
+
+    const cache = await caches.open("campogeo-app-shell-v4-8");
+    const indexCached = await cache.match("./index.html");
+
+    if (indexCached) {
+      const text = preparedMaps
+        ? `${preparedMaps} mapa(s) pronto(s) no aparelho.`
+        : "App salvo. Gere um mapa para usar no campo.";
+      updateOfflineReadyUi("ready", text);
+    } else {
+      updateOfflineReadyUi("error", "Abra online uma vez para salvar o app.");
+    }
+  } catch (error) {
+    updateOfflineReadyUi("error", "Não consegui verificar o modo offline.");
+  }
 }
 
 function openDatabase() {
@@ -617,6 +731,8 @@ async function renderMapList() {
 
     ui.mapList.appendChild(card);
   }
+
+  updateOfflineReadyStatus().catch(() => null);
 }
 
 async function prepareMapById(mapId) {
@@ -1508,20 +1624,20 @@ function hideProgress() {
 
 async function clearCacheAndReload() {
   try {
+    updateOfflineReadyUi("checking", "Atualizando arquivos offline...");
+    await prepareOfflineAppShell();
+
     if ("serviceWorker" in navigator) {
-      const regs = await navigator.serviceWorker.getRegistrations();
-      await Promise.all(regs.map((reg) => reg.unregister()));
+      const reg = await navigator.serviceWorker.getRegistration();
+      await reg?.update?.();
     }
 
-    if ("caches" in window) {
-      const keys = await caches.keys();
-      await Promise.all(keys.map((key) => caches.delete(key)));
-    }
-
-    showToast("Cache limpo. Recarregando...");
-    setTimeout(() => location.reload(), 900);
+    showToast("Cache atualizado.");
+    setTimeout(() => location.reload(), 650);
   } catch (error) {
-    location.reload();
+    console.warn(error);
+    showToast("Cache atualizado.");
+    setTimeout(() => location.reload(), 650);
   }
 }
 

@@ -2165,3 +2165,58 @@ body.app-loading {
     grid-column: 1 / -1 !important;
   }
 }
+
+
+/* ===== CampoGeo V4.8 Offline reforçado ===== */
+
+.offline-ready-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 12px;
+  padding: 12px;
+  border-radius: 18px;
+  background: rgba(255,255,255,.065);
+  border: 1px solid rgba(255,255,255,.10);
+}
+
+.offline-ready-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  background: var(--warning);
+  box-shadow: 0 0 0 5px rgba(255,209,102,.10);
+  flex: 0 0 auto;
+}
+
+.offline-ready-box.ready .offline-ready-dot {
+  background: var(--primary);
+  box-shadow: 0 0 0 5px rgba(40,199,111,.12);
+}
+
+.offline-ready-box.error .offline-ready-dot {
+  background: var(--danger);
+  box-shadow: 0 0 0 5px rgba(255,93,108,.10);
+}
+
+.offline-ready-box strong,
+.offline-ready-box small {
+  display: block;
+}
+
+.offline-ready-box strong {
+  font-size: 13px;
+}
+
+.offline-ready-box small {
+  color: var(--muted);
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+@media (max-width: 720px) {
+  .offline-ready-box {
+    padding: 11px;
+    border-radius: 16px;
+  }
+}
