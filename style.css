@@ -5390,3 +5390,184 @@ body:not(.map-open) {
     min-height: 58px !important;
   }
 }
+
+
+/* ===== CampoGeo V6.5 — Polido, sem mensagens permanentes ===== */
+
+/* Ícones SVG padronizados */
+.action-svg {
+  width: 20px;
+  height: 20px;
+  display: block;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.1;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.pin-svg {
+  fill: color-mix(in srgb, currentColor 16%, transparent);
+}
+
+/* Ícones em botões */
+.dock-icon,
+.map-tool-icon,
+.quality-icon,
+.danger-icon {
+  color: currentColor;
+}
+
+.dock-icon .action-svg {
+  width: 19px;
+  height: 19px;
+}
+
+.map-tool-icon .action-svg {
+  width: 22px;
+  height: 22px;
+}
+
+.quality-icon .action-svg,
+.danger-icon .action-svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Sem textos permanentes de depuração */
+.gps-debug-box {
+  display: none !important;
+}
+
+.toast {
+  pointer-events: none !important;
+}
+
+/* Quando não houver mensagem, não aparece nada */
+.toast:empty,
+.toast[hidden] {
+  display: none !important;
+}
+
+/* Toast menor e temporário */
+.toast {
+  max-width: min(430px, calc(100% - 32px)) !important;
+  padding: 9px 12px !important;
+  border-radius: 999px !important;
+  font-size: 12px !important;
+  line-height: 1.2 !important;
+}
+
+/* Menu inicial mais limpo */
+.library-panel {
+  background:
+    radial-gradient(circle at 100% 0%, rgba(40,199,111,.08), transparent 28%),
+    rgba(255,255,255,.055) !important;
+}
+
+.map-card {
+  transition: transform .16s ease, border-color .16s ease, background .16s ease;
+}
+
+.map-card:hover {
+  transform: translateY(-1px);
+  border-color: rgba(40,199,111,.22) !important;
+}
+
+/* Cards: botões com ícones mais equilibrados */
+.card-actions button {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 7px !important;
+}
+
+/* Botões do mapa: visual mais limpo */
+.map-screen.active .map-tool-button {
+  transition: transform .14s ease, color .14s ease, background .14s ease;
+}
+
+.map-screen.active .map-tool-button:active {
+  transform: scale(.94);
+}
+
+/* Botão marcar não fica preenchido */
+#pinModeBtn.active,
+#pinModeBtn.map-tool-button.active {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* Aba de cor mais bonita */
+.pin-color-picker {
+  gap: 7px !important;
+}
+
+.pin-color-dot {
+  border: 2px solid rgba(255,255,255,.36) !important;
+}
+
+.pin-color-dot.active {
+  border-color: #fff !important;
+}
+
+/* Corrige sobreposição no PC: barra do mapa não encosta no GPS */
+@media (min-width: 721px) {
+  .map-screen.active .map-action-bar {
+    max-width: calc(100% - 210px) !important;
+  }
+
+  .map-screen.active #locateBtn.gps-example-button {
+    right: 22px !important;
+    bottom: 24px !important;
+  }
+}
+
+/* Celular: menos texto e mais ícone */
+@media (max-width: 720px) {
+  .toast {
+    bottom: calc(72px + env(safe-area-inset-bottom)) !important;
+    max-width: calc(100% - 116px) !important;
+    padding: 7px 10px !important;
+    font-size: 11px !important;
+  }
+
+  .dock-icon .action-svg,
+  .map-tool-icon .action-svg {
+    width: 21px !important;
+    height: 21px !important;
+  }
+
+  .map-screen.active .map-tool-icon {
+    color: currentColor !important;
+  }
+
+  .map-screen.active .map-tool-button {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .quality-card select {
+    max-width: 118px;
+  }
+
+  .status-mini {
+    border-radius: 16px !important;
+  }
+}
+
+/* Celular pequeno: evita apertar tudo */
+@media (max-width: 390px) {
+  .dock-label strong {
+    font-size: 10px !important;
+  }
+
+  .map-screen.active .map-tool-icon {
+    width: 36px !important;
+    height: 36px !important;
+  }
+
+  .map-tool-icon .action-svg {
+    width: 19px !important;
+    height: 19px !important;
+  }
+}

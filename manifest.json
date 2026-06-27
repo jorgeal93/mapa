@@ -1,7 +1,7 @@
 {
   "name": "CampoGeo",
   "short_name": "CampoGeo",
-  "description": "CampoGeo - interface responsiva e organizada para PC e celular.",
+  "description": "CampoGeo - interface polida sem mensagens permanentes e com ícones melhores.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

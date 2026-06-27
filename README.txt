@@ -1,18 +1,23 @@
-# CampoGeo V6.4 — Responsivo e organizado
+# CampoGeo V6.5 — Polido sem mensagens permanentes
 
-Foco desta versão:
-- Melhor organização no menu inicial.
-- Melhor responsividade para PC, tablet e celular.
-- Header inicial mais limpo.
-- Status organizados.
-- Cards de mapas em grade no PC e em coluna no celular.
-- Barra inicial de ações ajustada para cada tela.
-- Tela do mapa ocupa melhor o espaço.
-- Topo do mapa mais compacto.
-- Barra de ferramentas do mapa organizada no PC e no celular.
-- GPS fixo no canto sem sumir.
-- Coordenada só aparece quando tiver valor.
-- Mantidas as funções: alfinete, cores, KMZ, limpar, offline e renderização.
+Melhorias:
+- Removidas caixas/mensagens permanentes de debug.
+- Avisos agora aparecem só por pouco tempo.
+- Mensagens desnecessárias foram silenciadas.
+- Ícones das ações foram trocados por SVGs mais bonitos e padronizados.
+- Ícones melhorados:
+  - Importar
+  - Atualizar
+  - Offline/Cache
+  - Marcar
+  - Importar KMZ
+  - Exportar KMZ
+  - Limpar
+  - Qualidade
+  - Resetar
+- Ajustes de clique/toque para evitar bugs ao marcar pontos.
+- Melhor acabamento visual no PC e celular.
+- Funções mantidas: GPS, alfinetes, cores, KMZ, limpar, offline e renderização.
 
 Depois de subir:
 1. Aperte Cache.
